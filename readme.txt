@@ -4,7 +4,7 @@ Donate link: http://takien.com/donate
 Tags: table,csv,csv-to-table,post,excel,csv file,widget
 Requires at least: 3.0
 Tested up to: 3.3.2
-Stable tag: 0.1
+Stable tag: 0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -69,6 +69,10 @@ Not yet.
 No
 
 == Changelog ==
+
+= 0.2 =
+* Fixed: Backward compatibility of str_getcsv that just not work in the version 0.1, now plugin should runs on PHP 5.2
+* Fixed: Table now has 'table' class even when 'tablesorter' is not enabled.
 
 = 0.1 =
 * First release

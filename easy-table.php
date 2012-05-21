@@ -4,7 +4,7 @@ Plugin Name: Easy Table
 Plugin URI: http://takien.com/
 Description: Create table in post, page, or widget in easy way.
 Author: Takien
-Version: 0.1
+Version: 0.2
 Author URI: http://takien.com/
 */
 
@@ -80,7 +80,7 @@ function __construct(){
 private function easy_table_base($return){
 	$easy_table_base = Array(
 				'name' 			=> 'Easy Table',
-				'version' 		=> '0.1',
+				'version' 		=> '0.2',
 				'plugin-domain'	=> 'easy-table'
 	);
 	return $easy_table_base[$return];
@@ -130,7 +130,7 @@ private function csv_to_table($data,$args){
 	}
 	$max_cols 	= count(max($data));
 	$i=0;
-	$output = '<table '.($id ? 'id="'.$id.'"':'').' width="'.$width.'" align="'.$align.'" class="'.($tablesorter ? 'tablesorter table ':'').$class.'" '.(($border !=='0') ? 'border="'.$border.'"' : '').'>';
+	$output = '<table '.($id ? 'id="'.$id.'"':'').' width="'.$width.'" align="'.$align.'" class="table '.($tablesorter ? 'tablesorter ':'').$class.'" '.(($border !=='0') ? 'border="'.$border.'"' : '').'>';
 	$output .= ($caption !=='') ? '<caption>'.$caption.'</caption>' : '';
 	$output .= $th ? '<thead>' : '<tbody>';
 	foreach($data as $k=>$v){ $i++;
@@ -486,17 +486,27 @@ function easy_table_init() {
 
 /**
 * Create function str_getcsv if not exists in server
+* @since version 0.2
 */	
 if (!function_exists('str_getcsv')) {
-	function str_getcsv($input, $delimiter = ",", $enclosure = '"', $escape = "\\") {
+	function str_getcsv($input, $delimiter = ",", $enclosure = '"', $escape = "\\"){
 		$fiveMBs = 5 * 1024 * 1024;
-		$fp = fopen("php://temp/maxmemory:$fiveMBs", 'r+');
-		fputs($fp, $input);
-		rewind($fp);
-
-		$data = fgetcsv($fp, 1000, $delimiter, $enclosure); //  $escape only got added in 5.3.0
-
-		fclose($fp);
-		return $data;
+		if (($handle = fopen("php://temp/maxmemory:$fiveMBs", 'r+')) !== FALSE) {
+		fputs($handle, $input);
+		rewind($handle);
+		$line = -1;
+		$return = Array();
+		while (($data = fgetcsv($handle, 1000, $delimiter)) !== FALSE) {
+			$num = count($data);
+			for ($c=0; $c < $num; $c++) {
+			 if(!empty($data[$c])){ 
+				$line++;
+				$return[$line] = $data[$c];
+			}
+			}
+		}
+		fclose($handle);
+		return $return;
+		}
 	}
 }
