@@ -1,10 +1,10 @@
 === Easy Table ===
 Contributors: takien
 Donate link: http://takien.com/donate
-Tags: table,csv,csv-to-table,post,excel,csv file,widget
+Tags: table,csv,csv-to-table,post,excel,csv file,widget,tablesorter
 Requires at least: 3.0
 Tested up to: 3.3.2
-Stable tag: 0.2
+Stable tag: 0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,7 +24,7 @@ Easy Table using standard CSV format to generate table data, it's easiest way to
 * Fancy table design (using Twitter CSS bootstrap)
 * WYSIWYG safe, I mean you can switch HTML/View tab in WordPress editor without breaking the table data.
 
-Example usage:
+= Example usage =
 
 * Basic table
 `[table]
@@ -42,6 +42,10 @@ Year,Make,Model,Length
 
 * Table from CSV file
 `[table file="example.com/blog/wp-content/uploads/pricelist.csv"][/table]`
+
+= Other notes =
+* Data in each cell must not have line break, otherwise it will be detected as new row.
+* No option for colspan and rowspan
 
 == Installation ==
 
@@ -69,6 +73,12 @@ Not yet.
 No
 
 == Changelog ==
+
+= 0.3 =
+* Improved: Option form now filled out with default value if there are no options saved in database and you don't need to save option to get the plugin to works.
+* Added: Option to select where script and style should be loaded, eg. if only in single page.
+* Added: tf parameter for tfoot, now you can set up tfoot for your table, tfoot picked up from 2nd row of the data, usage example [table tf="1"]data[/table]
+* Added: Credit link to Twitter Bootstrap and tablesorter jQuery plugin.
 
 = 0.2 =
 * Fixed: Backward compatibility of str_getcsv that just not work in the version 0.1, now plugin should runs on PHP 5.2

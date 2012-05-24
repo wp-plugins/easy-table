@@ -4,7 +4,7 @@ Plugin Name: Easy Table
 Plugin URI: http://takien.com/
 Description: Create table in post, page, or widget in easy way.
 Author: Takien
-Version: 0.2
+Version: 0.3
 Author URI: http://takien.com/
 */
 
@@ -37,11 +37,13 @@ class EasyTable {
 var $settings 	= Array(
 	'shortcodetag'	=> 'table',
 	'tablewidget'	=> false,
+	'scriptloadin'	=> Array('is_single','is_page'),
 	'class'			=> 'table-striped',
 	'caption'		=> false,
 	'width'			=> '100%',
 	'align'			=> 'left',
 	'th'			=> true,
+	'tf'			=> false,
 	'border'		=> 0,
 	'id'			=> false,
 	'tablesorter' 	=> false,
@@ -80,11 +82,12 @@ function __construct(){
 private function easy_table_base($return){
 	$easy_table_base = Array(
 				'name' 			=> 'Easy Table',
-				'version' 		=> '0.2',
+				'version' 		=> '0.3',
 				'plugin-domain'	=> 'easy-table'
 	);
 	return $easy_table_base[$return];
 }
+
 function easy_table_short_code($atts, $content="") {
 	$shortcode_atts = shortcode_atts(array(
 		'class' 		=> $this->get_easy_table_option('class'),
@@ -92,6 +95,7 @@ function easy_table_short_code($atts, $content="") {
 		'width' 		=> $this->get_easy_table_option('width'),
 		'align' 		=> $this->get_easy_table_option('align'),
 		'th'	  		=> $this->get_easy_table_option('th'),
+		'tf'	  		=> $this->get_easy_table_option('tf'),
 		'border'		=> $this->get_easy_table_option('border'),
 		'id'	  		=> $this->get_easy_table_option('id'),
 		'tablesorter'	=> $this->get_easy_table_option('tablesorter'),
@@ -132,22 +136,21 @@ private function csv_to_table($data,$args){
 	$i=0;
 	$output = '<table '.($id ? 'id="'.$id.'"':'').' width="'.$width.'" align="'.$align.'" class="table '.($tablesorter ? 'tablesorter ':'').$class.'" '.(($border !=='0') ? 'border="'.$border.'"' : '').'>';
 	$output .= ($caption !=='') ? '<caption>'.$caption.'</caption>' : '';
-	$output .= $th ? '<thead>' : '<tbody>';
+	$output .= $th ? '<thead>' : ($tf ? '' : '<tbody>');
 	foreach($data as $k=>$v){ $i++;
 		$v = array_pad($v,$max_cols,'');
+		$output .= (($i==2) AND $tf) ? '<tfoot>': '';
 		$output .= "\r\n".'<tr>';
-		if($i==1){
-			$thtd = $th ? 'th' : 'td';
-			$output .= "<$thtd>".implode("</$thtd><$thtd>",array_values($v))."</$thtd>";
-		}
-		else{
-			$output .= '<td>'.implode("</td><td>",array_values($v)).'</td>';
-		}
+
+		$thtd = ((($i==1) AND $th) OR (($i==2) AND $tf)) ? 'th' : 'td';
+		$output .= "<$thtd>".implode("</$thtd><$thtd>",array_values($v))."</$thtd>";
+		
 		$output .= '</tr>';
-		$output .= (($i==1) AND $th) ? '</thead><tbody>' : '';
+		$output .= (($i==1) AND $th) ? '</thead>' : '';
+		$output .= (($i==2) AND $tf) ? '</tfoot>': '';
+		
 	}
-	$output .= $th ? '</tbody>' : '';
-	$output .= '</table>';
+	$output .= '</tbody></table>';
 	return $output;
 }
 
@@ -170,14 +173,17 @@ return $r;
 /**
 * Retrieve options from database if any, or use default options instead.
 */
-function get_easy_table_option($return=''){
-	$option = get_option('easy_table_plugin_option');
-	if($return){
-		return ($option[$return] !== '') ? $option[$return] : $this->settings[$return];
+function get_easy_table_option($key=''){
+	$option = get_option('easy_table_plugin_option') ? get_option('easy_table_plugin_option') : Array();
+	$option = array_merge($this->settings,$option);
+	if($key){
+		$return = $option[$key];
 	}
 	else{
-		return $option;
+		$return = $option;
 	}
+	return $return;
+
 }
 
 /**
@@ -204,6 +210,14 @@ function render_form($fields){
 			$output .= '<td><input type="checkbox" id="'.$field['name'].'" name="'.$field['name'].'" value="'.$field['value'].'" '.$field['attr'].' />';
 			$output .= ' <span class="description">'.$field['description'].'</span></td></tr>';
 		}
+		if($field['type']=='checkboxgroup'){
+			$output .= '<tr><th><label>'.$field['grouplabel'].'</label></th>';
+			$output .= '<td>';
+			foreach($field['groupitem'] as $key=>$item){
+				$output .= '<input type="checkbox" id="'.$item['name'].'" name="'.$item['name'].'" value="'.$item['value'].'" '.$item['attr'].' /> <label for="'.$item['name'].'">'.$item['label'].'</label><br />';
+			}
+			$output .= ' <span class="description">'.$field['description'].'</span></td></tr>';
+		}
 	}
 	$output .= '</table>';
 	return $output;
@@ -213,10 +227,16 @@ function render_form($fields){
 * Register javascript
 */	
 function easy_table_script() {
+	if(	is_single() AND in_array('is_single',$this->get_easy_table_option('scriptloadin')) OR
+		is_page() AND in_array('is_page',$this->get_easy_table_option('scriptloadin')) OR 
+		is_home() AND in_array('is_home',$this->get_easy_table_option('scriptloadin')) OR 
+		is_archive() AND in_array('is_archive',$this->get_easy_table_option('scriptloadin')))
+	{
 	if($this->get_easy_table_option('tablesorter')) {
 		wp_enqueue_script('jquery');
 		wp_register_script('easy_table_script',plugins_url( 'jquery.tablesorter.min.js' , __FILE__ ),'jquery');
 		wp_enqueue_script('easy_table_script');
+	}
 	}
 }
 
@@ -224,14 +244,17 @@ function easy_table_script() {
 * Register stylesheet
 */	
 function easy_table_style() {
+	if(	is_single() AND in_array('is_single',$this->get_easy_table_option('scriptloadin')) OR
+		is_page() AND in_array('is_page',$this->get_easy_table_option('scriptloadin')) OR 
+		is_home() AND in_array('is_home',$this->get_easy_table_option('scriptloadin')) OR 
+		is_archive() AND in_array('is_archive',$this->get_easy_table_option('scriptloadin')))
+	{
 	if($this->get_easy_table_option('loadcss')) {
 		wp_register_style('easy_table_style', plugins_url('easy-table-style.css', __FILE__),false,$this->easy_table_base('version'));
 		wp_enqueue_style( 'easy_table_style');
 	}
+	}
 }
-
-
-
 
 function easy_table_admin_script(){
 $page = isset($_GET['page']) ? $_GET['page'] : '';
@@ -331,6 +354,37 @@ settings_fields('easy_table_option_field');
 			'description'	=> __('Check this if you want the table could be rendered in widget.','easy-table'),
 			'value'			=> 1,
 			'attr'			=> $this->get_easy_table_option('tablewidget') ? 'checked="checked"' : '')
+		,Array(
+			'type'			=> 'checkboxgroup',
+			'grouplabel'	=> __('Only load JS/CSS when in this condition','easy-table'),
+			'description'	=> __('Please check in where JavaScript and CSS should be loaded','easy-table'),
+			'groupitem'		=> Array(
+								Array(
+								'name' 	=> 'easy_table_plugin_option[scriptloadin][]',
+								'label'	=> __('Single','easy-table'),
+								'value'	=> 'is_single',
+								'attr'	=> in_array('is_single',$this->get_easy_table_option('scriptloadin')) ? 'checked="checked"' : ''
+								),
+								Array(
+								'name' 	=> 'easy_table_plugin_option[scriptloadin][]',
+								'label'	=> __('Page','easy-table'),
+								'value'	=> 'is_page',
+								'attr'	=> in_array('is_page',$this->get_easy_table_option('scriptloadin')) ? 'checked="checked"' : ''
+								),
+								Array(
+								'name' 	=> 'easy_table_plugin_option[scriptloadin][]',
+								'label'	=> __('Front page','easy-table'),
+								'value'	=> 'is_home',
+								'attr'	=> in_array('is_home',$this->get_easy_table_option('scriptloadin')) ? 'checked="checked"' : ''
+								),
+								Array(
+								'name' 	=> 'easy_table_plugin_option[scriptloadin][]',
+								'label'	=> __('Archive page','easy-table'),
+								'value'	=> 'is_archive',
+								'attr'	=> in_array('is_archive',$this->get_easy_table_option('scriptloadin')) ? 'checked="checked"' : ''
+								)
+								)
+		)
 	);
 	echo $this->render_form($fields);
 
@@ -451,6 +505,7 @@ if(isset($_POST['test-easy-table-reset'])){
 <li><strong>width</strong>, <?php _e('default value','easy-table');?> <em>'100%'</em></li>
 <li><strong>align</strong>, <?php _e('default value','easy-table');?> <em>'left'</em></li>
 <li><strong>th</strong>, <?php _e('default value','easy-table');?> <em>'true'</em></li>
+<li><strong>tf</strong>, <?php _e('default value','easy-table');?> <em>'false'</em></li>
 <li><strong>border</strong>, <?php _e('default value','easy-table');?> <em>'0'</em></li>
 <li><strong>id</strong>, <?php _e('default value','easy-table');?> <em>'false'</em></li>
 <li><strong>tablesorter</strong>, <?php _e('default value','easy-table');?> <em>'false'</em></li>
@@ -462,7 +517,7 @@ if(isset($_POST['test-easy-table-reset'])){
 	</textarea>
 	<input type="hidden" name="test-easy-table" value="1" />
 	<p><input class="button" type="submit" name="test-easy-table-reset" value="<?php _e('Reset','easy-table');?>" />
-	<input class="button-primary" type="submit" value="<?php _e('Update preview','easy-table');?>' &raquo;" /></p></form>
+	<input class="button-primary" type="submit" value="<?php _e('Update preview','easy-table');?> &raquo;" /></p></form>
 	<div>
 	<h3><?php _e('Preview','easy-table');?></h3>
 	<?php echo do_shortcode(stripslashes($tableexample));?>
@@ -470,7 +525,12 @@ if(isset($_POST['test-easy-table-reset'])){
 
 </div>
 <div class="clear"></div>
-<p><a href="http://takien.com/plugins/easy-table"><?php _e('Any question or suggestion? Click here!','easy-table');?></a></p>
+<p><a target="_blank" href="http://takien.com/plugins/easy-table"><?php _e('Any question or suggestion? Click here!','easy-table');?></a></p>
+<h3><?php _e('Credit','easy-table');?>:</h3>
+<ul>
+	<li><?php _e('Tablesorter by','easy-table');?> <a target="_blank" href="http://tablesorter.com">tablesorter</a></li>
+	<li><?php _e('CSS by','easy-table');?> <a target="_blank" href="http://twitter.github.com/bootstrap">Twitter Bootstrap</a></li>
+</ul>
 </div><!--wrap-->
 <?php
 	}
