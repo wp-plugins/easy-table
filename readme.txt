@@ -4,7 +4,7 @@ Donate link: http://takien.com/donate
 Tags: table,csv,csv-to-table,post,excel,csv file,widget,tablesorter
 Requires at least: 3.0
 Tested up to: 3.3.2
-Stable tag: 0.3
+Stable tag: 0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -40,11 +40,23 @@ Year,Make,Model,Length
 2000,Mercury,Cougar,2.38
 [/table]`
 
+* Table with no heading
+`[table th="0"]some data here[/table]`
+
+* Table with no heading
+`[table th="0"]some data here[/table]`
+
+* Table with footer/tfoot, by default tfoot automatically picked up from second row.
+`[table tf="1"]some data here[/table]`
+
+* Table with picked up from last row.
+`[table tf="last"]some data here[/table]`
+
 * Table from CSV file
 `[table file="example.com/blog/wp-content/uploads/pricelist.csv"][/table]`
 
 = Other notes =
-* Data in each cell must not have line break, otherwise it will be detected as new row.
+* In PHP version lower than 5.3, data in each cell must not have line break, otherwise it will be detected as new row.
 * No option for colspan and rowspan
 
 == Installation ==
@@ -73,6 +85,10 @@ Not yet.
 No
 
 == Changelog ==
+
+= 0.4 =
+* Fixed: Option value can't override default value if option value is empty (if checkbox is uncecked).
+* Added: Optionally, tfoot now can be taken from last row. Example usage: [table tf="last"]somedata[/table]
 
 = 0.3 =
 * Improved: Option form now filled out with default value if there are no options saved in database and you don't need to save option to get the plugin to works.

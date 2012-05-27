@@ -4,7 +4,7 @@ Plugin Name: Easy Table
 Plugin URI: http://takien.com/
 Description: Create table in post, page, or widget in easy way.
 Author: Takien
-Version: 0.3
+Version: 0.4
 Author URI: http://takien.com/
 */
 
@@ -82,7 +82,7 @@ function __construct(){
 private function easy_table_base($return){
 	$easy_table_base = Array(
 				'name' 			=> 'Easy Table',
-				'version' 		=> '0.3',
+				'version' 		=> '0.4',
 				'plugin-domain'	=> 'easy-table'
 	);
 	return $easy_table_base[$return];
@@ -134,20 +134,26 @@ private function csv_to_table($data,$args){
 	}
 	$max_cols 	= count(max($data));
 	$i=0;
+	/**
+	* tfoot position
+	* @since 0.4
+	*/
+	$tfpos = ($tf == 'last') ? count($data)-1 : 2;
 	$output = '<table '.($id ? 'id="'.$id.'"':'').' width="'.$width.'" align="'.$align.'" class="table '.($tablesorter ? 'tablesorter ':'').$class.'" '.(($border !=='0') ? 'border="'.$border.'"' : '').'>';
 	$output .= ($caption !=='') ? '<caption>'.$caption.'</caption>' : '';
 	$output .= $th ? '<thead>' : ($tf ? '' : '<tbody>');
+	
 	foreach($data as $k=>$v){ $i++;
 		$v = array_pad($v,$max_cols,'');
-		$output .= (($i==2) AND $tf) ? '<tfoot>': '';
+		$output .= (($i==$tfpos) AND $tf) ? '<tfoot>': '';
 		$output .= "\r\n".'<tr>';
 
-		$thtd = ((($i==1) AND $th) OR (($i==2) AND $tf)) ? 'th' : 'td';
+		$thtd = ((($i==1) AND $th) OR (($i==$tfpos) AND $tf)) ? 'th' : 'td';
 		$output .= "<$thtd>".implode("</$thtd><$thtd>",array_values($v))."</$thtd>";
 		
 		$output .= '</tr>';
 		$output .= (($i==1) AND $th) ? '</thead>' : '';
-		$output .= (($i==2) AND $tf) ? '</tfoot>': '';
+		$output .= (($i==$tfpos) AND $tf) ? '</tfoot>': '';
 		
 	}
 	$output .= '</tbody></table>';
@@ -207,14 +213,14 @@ function render_form($fields){
 		}
 		if($field['type']=='checkbox'){
 			$output .= '<tr><th><label for="'.$field['name'].'">'.$field['label'].'</label></th>';
-			$output .= '<td><input type="checkbox" id="'.$field['name'].'" name="'.$field['name'].'" value="'.$field['value'].'" '.$field['attr'].' />';
+			$output .= '<td><input type="hidden" name="'.$field['name'].'" value="" /><input type="checkbox" id="'.$field['name'].'" name="'.$field['name'].'" value="'.$field['value'].'" '.$field['attr'].' />';
 			$output .= ' <span class="description">'.$field['description'].'</span></td></tr>';
 		}
 		if($field['type']=='checkboxgroup'){
 			$output .= '<tr><th><label>'.$field['grouplabel'].'</label></th>';
 			$output .= '<td>';
 			foreach($field['groupitem'] as $key=>$item){
-				$output .= '<input type="checkbox" id="'.$item['name'].'" name="'.$item['name'].'" value="'.$item['value'].'" '.$item['attr'].' /> <label for="'.$item['name'].'">'.$item['label'].'</label><br />';
+				$output .= '<input type="hidden" name="'.$item['name'].'" value="" /><input type="checkbox" id="'.$item['name'].'" name="'.$item['name'].'" value="'.$item['value'].'" '.$item['attr'].' /> <label for="'.$item['name'].'">'.$item['label'].'</label><br />';
 			}
 			$output .= ' <span class="description">'.$field['description'].'</span></td></tr>';
 		}
