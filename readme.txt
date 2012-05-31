@@ -4,7 +4,7 @@ Donate link: http://takien.com/donate
 Tags: table,csv,csv-to-table,post,excel,csv file,widget,tablesorter
 Requires at least: 3.0
 Tested up to: 3.3.2
-Stable tag: 0.4
+Stable tag: 0.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -40,6 +40,15 @@ Year,Make,Model,Length
 2000,Mercury,Cougar,2.38
 [/table]`
 
+* Table with colspan and other attribute in some cells
+`[table]
+no[attr width="20"],head1,head2,head3
+1,row1col1,row1col2,row1col3[attr class="someclass"]
+2,row2col1,row2col2,row2col3
+3,row3col1[attr colspan="2"],row3col3
+4,row4col1,row4col2,row4col3
+[/table]`
+
 * Table with no heading
 `[table th="0"]some data here[/table]`
 
@@ -57,7 +66,6 @@ Year,Make,Model,Length
 
 = Other notes =
 * In PHP version lower than 5.3, data in each cell must not have line break, otherwise it will be detected as new row.
-* No option for colspan and rowspan
 
 == Installation ==
 
@@ -69,9 +77,7 @@ There are many ways to install this plugin, e.g:
 
 == Frequently Asked Questions ==
 
-= Is there any question? =
-
-Not yet.
+[See official plugin support here](http://takien.com/plugins/easy-table).
 
 == Screenshots ==
 
@@ -86,8 +92,14 @@ No
 
 == Changelog ==
 
+= 0.5 =
+* Added: Ability to set attribute for each cell.
+* Added: Support and About tab in plugin options page.
+* Fixed: Table width attribute not work.
+* Removed: Equalize the number of columns in each row.
+
 = 0.4 =
-* Fixed: Option value can't override default value if option value is empty (if checkbox is uncecked).
+* Fixed: Option value can't override default value if option value is empty (if checkbox is unchecked).
 * Added: Optionally, tfoot now can be taken from last row. Example usage: [table tf="last"]somedata[/table]
 
 = 0.3 =
