@@ -4,7 +4,7 @@ Donate link: http://takien.com/donate
 Tags: table,csv,csv-to-table,post,excel,csv file,widget,tablesorter
 Requires at least: 3.0
 Tested up to: 3.3.2
-Stable tag: 0.5
+Stable tag: 0.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -91,6 +91,10 @@ There are many ways to install this plugin, e.g:
 No
 
 == Changelog ==
+
+= 0.6 =
+* Fixed: Missing tbody opening tag on some condition
+* Fixed: Duplicate unit of width attribute
 
 = 0.5 =
 * Added: Ability to set attribute for each cell.

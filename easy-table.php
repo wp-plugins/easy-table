@@ -4,7 +4,7 @@ Plugin Name: Easy Table
 Plugin URI: http://takien.com/
 Description: Create table in post, page, or widget in easy way.
 Author: Takien
-Version: 0.5
+Version: 0.6
 Author URI: http://takien.com/
 */
 
@@ -85,7 +85,7 @@ function __construct(){
 private function easy_table_base($return){
 	$easy_table_base = Array(
 				'name' 			=> 'Easy Table',
-				'version' 		=> '0.5',
+				'version' 		=> '0.6',
 				'plugin-domain'	=> 'easy-table'
 	);
 	return $easy_table_base[$return];
@@ -150,15 +150,23 @@ private function csv_to_table($data,$args){
 	* tfoot position
 	* @since 0.4
 	*/
-	$tfpos = ($tf == 'last') ? count($data)-1 : 2;
-	$output = '<table '.($id ? 'id="'.$id.'"':'').' style="width:'.$width.'px" width="'.$width.'" align="'.$align.'" class="table '.($tablesorter ? 'tablesorter ':'').$class.'" '.(($border !=='0') ? 'border="'.$border.'"' : '').'>';
-	$output .= $caption ? '<caption>'.$caption.'</caption>' : '';
-	$output .= $th ? '<thead>' : ($tf ? '' : '<tbody>');
+	$tfpos = ($tf == 'last') ? count($data) : ($th?2:1);
+
+	$pos = strpos($width,'px');
+	if ($pos === false) {
+		$width = (int)$width.'%';
+	} else {
+		$width = (int)$width.'px';
+	}
+	$output .= $width.'<table '.($id ? 'id="'.$id.'"':'').' style="width:'.$width.';'.(($align=='center') ? 'margin-left:auto;margin-right:auto' : '').'" width="'.(int)$width.'" align="'.$align.'" class="table clearfix '.($tablesorter ? 'tablesorter ':'').$class.'" '.(($border !=='0') ? 'border="'.$border.'"' : '').'>'."\n";
+	$output .= $caption ? '<caption>'.$caption.'</caption>'."\n" : '';
+	$output .= $th ? '<thead>' : (($tf !== 'last') ? '' : '<tbody>');
+	$output .= (!$th AND !$tf) ? '<tbody>':'';
 	
 	foreach($data as $k=>$cols){ $i++;
 		//$cols = array_pad($cols,$max_cols,'');
 		
-		$output .= (($i==$tfpos) AND $tf) ? '<tfoot>': '';
+		$output .= (($i==$tfpos) AND $tf) ? (($tf=='last')?'</tbody>':'').'<tfoot>': '';
 		$output .= "\r\n".'<tr>';
 
 		$thtd = ((($i==1) AND $th) OR (($i==$tfpos) AND $tf)) ? 'th' : 'td';
@@ -174,15 +182,15 @@ private function csv_to_table($data,$args){
 				$colspan = shortcode_parse_atts($attr);
 				$colspan = $colspan['colspan']; 
 				*/
-			$output .= "<$thtd $attr>".do_shortcode($col)."</$thtd>";
+			$output .= "<$thtd $attr>".do_shortcode($col)."</$thtd>\n";
 		}
 	
-		$output .= '</tr>';
-		$output .= (($i==1) AND $th) ? '</thead>' : '';
-		$output .= (($i==$tfpos) AND $tf) ? '</tfoot>': '';
+		$output .= '</tr>'."\n";
+		$output .= (($i==1) AND $th) ? '</thead>'."\n".'<tbody>' : '';
+		$output .= (($i==$tfpos) AND $tf) ? '</tfoot>'.((($tf==1) AND !$th) ? '<tbody>':''): '';
 		
 	}
-	$output .= '</tbody></table>';
+	$output .= (($tf!=='last')?'</tbody>':'').'</table>';
 	return $output;
 }
 
@@ -283,6 +291,7 @@ function easy_table_style() {
 	{
 	if($this->get_easy_table_option('loadcss')) {
 		wp_register_style('easy_table_style', plugins_url('easy-table-style.css', __FILE__),false,$this->easy_table_base('version'));
+		//wp_register_style('easy_table_style', plugins_url('/themes/aucity/style.css', __FILE__),false,$this->easy_table_base('version'));
 		wp_enqueue_style( 'easy_table_style');
 	}
 	}
