@@ -158,7 +158,7 @@ private function csv_to_table($data,$args){
 	} else {
 		$width = (int)$width.'px';
 	}
-	$output .= $width.'<table '.($id ? 'id="'.$id.'"':'').' style="width:'.$width.';'.(($align=='center') ? 'margin-left:auto;margin-right:auto' : '').'" width="'.(int)$width.'" align="'.$align.'" class="table clearfix '.($tablesorter ? 'tablesorter ':'').$class.'" '.(($border !=='0') ? 'border="'.$border.'"' : '').'>'."\n";
+	$output = '<table '.($id ? 'id="'.$id.'"':'').' style="width:'.$width.';'.(($align=='center') ? 'margin-left:auto;margin-right:auto' : '').'" width="'.(int)$width.'" align="'.$align.'" class="table clearfix '.($tablesorter ? 'tablesorter ':'').$class.'" '.(($border !=='0') ? 'border="'.$border.'"' : '').'>'."\n";
 	$output .= $caption ? '<caption>'.$caption.'</caption>'."\n" : '';
 	$output .= $th ? '<thead>' : (($tf !== 'last') ? '' : '<tbody>');
 	$output .= (!$th AND !$tf) ? '<tbody>':'';
