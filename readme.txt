@@ -3,8 +3,8 @@ Contributors: takien
 Donate link: http://takien.com/donate
 Tags: table,csv,csv-to-table,post,excel,csv file,widget,tablesorter
 Requires at least: 3.0
-Tested up to: 3.3.2
-Stable tag: 0.6.1
+Tested up to: 3.4
+Stable tag: 0.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,7 +65,8 @@ no[attr width="20"],head1,head2,head3
 `[table file="example.com/blog/wp-content/uploads/pricelist.csv"][/table]`
 
 = Other notes =
-* In PHP version lower than 5.3, data in each cell must not have line break, otherwise it will be detected as new row.
+* Data in each cell must not have line break, otherwise it will be detected as new row.
+* If read from file, the file URL must not contain space.
 
 == Installation ==
 
@@ -92,8 +93,12 @@ No
 
 == Changelog ==
 
-= 0.6.1 =
+= 0.7 =
+* Fixed: Enclosure in the first column does not work.
+* Added: Compatibility with WordPress 3.4
+* Fixed: Missing enclosure parameter in PHP < 5.3.0
 
+= 0.6.1 =
 * Fixed: Accidentally add unused character to the table
 
 = 0.6 =

@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: easy-table 0.6\n"
+"Project-Id-Version: easy-table 0.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-06-10 22:48+0700\n"
-"PO-Revision-Date: 2012-06-10 22:48+0700\n"
+"POT-Creation-Date: 2012-06-16 02:27+0700\n"
+"PO-Revision-Date: 2012-06-16 02:28+0700\n"
 "Last-Translator: takien <contact@takien.com>\n"
 "Language-Team: takien.com <contact@takien.com>\n"
 "MIME-Version: 1.0\n"
@@ -16,333 +16,333 @@ msgstr ""
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: easy-table.php:376
+#: easy-table.php:381
 msgid "Settings"
 msgstr "Pengaturan"
 
-#: easy-table.php:388
+#: easy-table.php:393
 msgid "Instruction"
 msgstr "Petunjuk"
 
-#: easy-table.php:389
+#: easy-table.php:394
 msgid "Once plugin installed, go to plugin options page to configure some options"
 msgstr ""
 
-#: easy-table.php:390
+#: easy-table.php:395
 msgid "You are ready to write a table in post or page."
 msgstr ""
 
-#: easy-table.php:391
+#: easy-table.php:396
 msgid "To be able write table in widget you have to check <em>Enable render table in widget</em> option in the option page."
 msgstr ""
 
-#: easy-table.php:411
+#: easy-table.php:416
 #, php-format
 msgid "%s Option"
 msgstr "Pengaturan %s"
 
-#: easy-table.php:412
+#: easy-table.php:417
 msgid "Support"
 msgstr ""
 
-#: easy-table.php:413
+#: easy-table.php:418
 msgid "About"
 msgstr ""
 
-#: easy-table.php:423
+#: easy-table.php:428
 msgid "Show/hide description"
 msgstr ""
 
-#: easy-table.php:424
+#: easy-table.php:429
 msgid "General options"
 msgstr "Pengaturan umum"
 
-#: easy-table.php:429
+#: easy-table.php:434
 msgid "Short code tag"
 msgstr ""
 
-#: easy-table.php:431
+#: easy-table.php:436
 msgid "Shortcode tag, type \"table\" if you want to use [table] short tag."
 msgstr ""
 
-#: easy-table.php:437
-#: easy-table.php:610
+#: easy-table.php:442
+#: easy-table.php:615
 msgid "Cell attribute tag"
 msgstr ""
 
-#: easy-table.php:439
+#: easy-table.php:444
 msgid "Cell attribute tag, default is attr."
 msgstr ""
 
-#: easy-table.php:444
+#: easy-table.php:449
 msgid "Also render table in widget?"
 msgstr ""
 
-#: easy-table.php:446
+#: easy-table.php:451
 msgid "Check this if you want the table could be rendered in widget."
 msgstr ""
 
-#: easy-table.php:451
+#: easy-table.php:456
 msgid "Only load JS/CSS when in this condition"
 msgstr ""
 
-#: easy-table.php:452
+#: easy-table.php:457
 msgid "Please check in where JavaScript and CSS should be loaded"
 msgstr ""
 
-#: easy-table.php:456
+#: easy-table.php:461
 msgid "Single"
 msgstr ""
 
-#: easy-table.php:462
+#: easy-table.php:467
 msgid "Page"
 msgstr ""
 
-#: easy-table.php:468
+#: easy-table.php:473
 msgid "Front page"
 msgstr ""
 
-#: easy-table.php:474
+#: easy-table.php:479
 msgid "Archive page"
 msgstr ""
 
-#: easy-table.php:486
+#: easy-table.php:491
 msgid "Use tablesorter?"
 msgstr "Gunakan tablesorter?"
 
-#: easy-table.php:489
+#: easy-table.php:494
 msgid "Check this to use tablesorter jQuery plugin"
 msgstr "Ceklist ini jika ingin menggunakan jQuery plugin tablesorter"
 
-#: easy-table.php:493
+#: easy-table.php:498
 msgid "Use TH for the first row?"
 msgstr "Gunakan TH untuk baris pertama?"
 
-#: easy-table.php:496
+#: easy-table.php:501
 msgid "Check this if you want to use first row as table head (required by tablesorter)"
 msgstr ""
 
-#: easy-table.php:500
+#: easy-table.php:505
 msgid "Load CSS?"
 msgstr "Muat CSS?"
 
-#: easy-table.php:503
+#: easy-table.php:508
 msgid "Check this to use CSS included in this plugin to styling table, you may unceck if you want to write your own style."
 msgstr "Ceklist ini untuk menyertakan CSS untuk penataan tampilan tabel."
 
-#: easy-table.php:507
+#: easy-table.php:512
 msgid "Table class"
 msgstr "Class tabel"
 
-#: easy-table.php:509
+#: easy-table.php:514
 msgid "Table class attribute, if you use bootstrap CSS, you should add at least \"table\" class."
 msgstr "Atribut class pada tabel, jika Anda menggunakan CSS bootstrap, setidaknya harus menambahkan class \"table\""
 
-#: easy-table.php:513
+#: easy-table.php:518
 msgid "Table width"
 msgstr "Lebar tabel"
 
-#: easy-table.php:515
+#: easy-table.php:520
 msgid "Table width, in pixel or percent (may be overriden by CSS)"
 msgstr "Lebar tabel, dalam pixel atau persen (kemungkinan ditimpa oleh CSS)"
 
-#: easy-table.php:519
+#: easy-table.php:524
 msgid "Table align"
 msgstr "Perataan tabel"
 
-#: easy-table.php:521
+#: easy-table.php:526
 msgid "Table align, left/right/center (may be overriden by CSS)"
 msgstr "Perataan tabel, left/right/center (kemungkinan ditimpa oleh CSS)"
 
-#: easy-table.php:525
+#: easy-table.php:530
 msgid "Table border"
 msgstr "Garis tabel"
 
-#: easy-table.php:527
+#: easy-table.php:532
 msgid "Table border (may be overriden by CSS)"
 msgstr "Garis tabel (kemungkinan ditimpa oleh CSS)"
 
-#: easy-table.php:532
+#: easy-table.php:537
 msgid "Table options"
 msgstr "Pengaturan tabel"
 
-#: easy-table.php:537
+#: easy-table.php:542
 msgid "Parser Option"
 msgstr "Pengaturan parser"
 
-#: easy-table.php:538
+#: easy-table.php:543
 msgid "Do not change this unless you know what you're doing"
 msgstr "Jangan ganti bagian ini kecuali Anda mengetahuinya"
 
-#: easy-table.php:544
+#: easy-table.php:549
 msgid "Delimiter"
 msgstr "Pemisah"
 
-#: easy-table.php:547
+#: easy-table.php:552
 msgid "CSV delimiter (default is comma)"
 msgstr ""
 
-#: easy-table.php:550
+#: easy-table.php:555
 msgid "Enclosure"
 msgstr ""
 
-#: easy-table.php:553
+#: easy-table.php:558
 msgid "CSV enclosure (default is double quote)"
 msgstr ""
 
-#: easy-table.php:556
+#: easy-table.php:561
 msgid "Escape"
 msgstr ""
 
-#: easy-table.php:559
+#: easy-table.php:564
 msgid "CSV escape (default is backslash)"
 msgstr ""
 
-#: easy-table.php:562
+#: easy-table.php:567
 msgid "Allow read CSV from file?"
 msgstr "Bolehkan membaca CSV dari file?"
 
-#: easy-table.php:565
+#: easy-table.php:570
 msgid "Check this if you also want to convert CSV file to table"
 msgstr "Ceklist ini jika Anda juga ingin merubah file CSV ke tabel"
 
-#: easy-table.php:573
+#: easy-table.php:578
 msgid "Save"
 msgstr "Simpan"
 
-#: easy-table.php:595
+#: easy-table.php:600
 msgid "Possible parameter"
 msgstr "Parameter yang dimungkinkan"
 
-#: easy-table.php:596
+#: easy-table.php:601
 msgid "These parameters commonly can override global options in the left side of this page. Example usage:"
 msgstr "Parameter berikut ini secara umum dapat menggantikan setingan global yang ada di sebelah kiri halaman ini. Contoh penggunaan:"
 
-#: easy-table.php:599
-#: easy-table.php:600
-#: easy-table.php:601
-#: easy-table.php:602
-#: easy-table.php:603
 #: easy-table.php:604
 #: easy-table.php:605
 #: easy-table.php:606
 #: easy-table.php:607
 #: easy-table.php:608
+#: easy-table.php:609
+#: easy-table.php:610
+#: easy-table.php:611
+#: easy-table.php:612
+#: easy-table.php:613
 msgid "default value"
 msgstr "nilai bawaan"
 
-#: easy-table.php:599
+#: easy-table.php:604
 msgid "another value"
 msgstr "nilai lainnya"
 
-#: easy-table.php:612
+#: easy-table.php:617
 msgid "To set attribute for cell eg. class, colspan, rowspan, etc"
 msgstr ""
 
-#: easy-table.php:613
+#: easy-table.php:618
 msgid "Usage"
 msgstr ""
 
-#: easy-table.php:624
+#: easy-table.php:629
 msgid "Test area:"
 msgstr "Area test:"
 
-#: easy-table.php:629
+#: easy-table.php:634
 msgid "Reset"
 msgstr "Reset"
 
-#: easy-table.php:630
+#: easy-table.php:635
 msgid "Update preview"
 msgstr "Perbaharui pratinjau"
 
-#: easy-table.php:632
+#: easy-table.php:637
 msgid "Preview"
 msgstr "Pratinjau"
 
-#: easy-table.php:640
+#: easy-table.php:645
 msgid "Full documentation, see here!"
 msgstr ""
 
-#: easy-table.php:641
+#: easy-table.php:646
 msgid "Or you can use this discussion to get support, request feature or reporting bug."
 msgstr ""
 
-#: easy-table.php:699
+#: easy-table.php:704
 msgid "Install Now"
 msgstr ""
 
-#: easy-table.php:703
+#: easy-table.php:708
 msgid "Install Update Now"
 msgstr ""
 
-#: easy-table.php:706
+#: easy-table.php:711
 #, php-format
 msgid "Newer Version (%s) Installed"
 msgstr ""
 
-#: easy-table.php:709
+#: easy-table.php:714
 msgid "Latest Version Installed"
 msgstr ""
 
-#: easy-table.php:718
+#: easy-table.php:723
 msgid "Latest Version:"
 msgstr ""
 
-#: easy-table.php:720
+#: easy-table.php:725
 msgid "Author:"
 msgstr ""
 
-#: easy-table.php:722
+#: easy-table.php:727
 msgid "Last Updated:"
 msgstr ""
 
-#: easy-table.php:723
+#: easy-table.php:728
 #, php-format
 msgid "%s ago"
 msgstr ""
 
-#: easy-table.php:725
+#: easy-table.php:730
 msgid "Requires WordPress Version:"
 msgstr ""
 
-#: easy-table.php:725
+#: easy-table.php:730
 #, php-format
 msgid "%s or higher"
 msgstr ""
 
-#: easy-table.php:727
+#: easy-table.php:732
 msgid "Compatible up to:"
 msgstr ""
 
-#: easy-table.php:729
+#: easy-table.php:734
 msgid "Downloaded:"
 msgstr ""
 
-#: easy-table.php:731
+#: easy-table.php:736
 msgid "WordPress.org Plugin Page &#187;"
 msgstr ""
 
-#: easy-table.php:733
+#: easy-table.php:738
 msgid "Plugin Homepage  &#187;"
 msgstr ""
 
-#: easy-table.php:737
+#: easy-table.php:742
 msgid "Average Rating"
 msgstr ""
 
-#: easy-table.php:747
+#: easy-table.php:758
 msgid "Click here to rate"
 msgstr ""
 
-#: easy-table.php:748
+#: easy-table.php:759
 msgid "Credit"
 msgstr "Kredit"
 
-#: easy-table.php:749
+#: easy-table.php:760
 msgid "Tablesorter by"
 msgstr "Tablesorter oleh"
 
-#: easy-table.php:749
+#: easy-table.php:760
 msgid "CSS by"
 msgstr "CSS oleh"
 

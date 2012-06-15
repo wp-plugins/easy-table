@@ -4,7 +4,7 @@ Plugin Name: Easy Table
 Plugin URI: http://takien.com/
 Description: Create table in post, page, or widget in easy way.
 Author: Takien
-Version: 0.6.1
+Version: 0.7
 Author URI: http://takien.com/
 */
 
@@ -81,11 +81,10 @@ function __construct(){
 	}
 }
 
-
 private function easy_table_base($return){
 	$easy_table_base = Array(
 				'name' 			=> 'Easy Table',
-				'version' 		=> '0.6.1',
+				'version' 		=> '0.7',
 				'plugin-domain'	=> 'easy-table'
 	);
 	return $easy_table_base[$return];
@@ -108,14 +107,20 @@ function easy_table_short_code($atts, $content="") {
 		'escape' 		=> $this->get_easy_table_option('escape'),
 		'file'			=> $this->get_easy_table_option('file')
 	 ), $atts);
-
-	$content 		= clean_pre($content);
+	/**
+	* because clean_pre is deprecated since WordPress 3.4, then replace it manually
+	$content 		= clean_pre($content);*/
+	
+	$content = str_replace(array('<br />', '<br/>', '<br>'), array('', '', ''), $content);
+	$content = str_replace('<p>', "\n", $content);
+	$content = str_replace('</p>', '', $content);
+	
 	$content 		= str_replace('&nbsp;','',$content);
 	$char_codes 	= array( '&#8216;', '&#8217;', '&#8220;', '&#8221;', '&#8242;', '&#8243;' );
 	$replacements 	= array( "'", "'", '"', '"', "'", '"' );
 	$content = str_replace( $char_codes, $replacements, $content );
 		
-	 return $this->csv_to_table($content,$shortcode_atts);
+	return $this->csv_to_table($content,$shortcode_atts);
 }
 
 /**
@@ -138,13 +143,15 @@ private function csv_to_table($data,$args){
 	if($file){
 		$data = @file_get_contents($file);
 	}
+	/**
+	* @todo check if $file url has special character that need to be urlencoded.
+	*/
 
 	if(empty($data)) return false;
-
 	if(!is_array($data)){
-		$data 	= $this->csv_to_array(trim($data), $delimiter, html_entity_decode($enclosure), $escape);
+		$data 	= $this->csv_to_array(trim($data), $delimiter, $enclosure, $escape);
 	}
-	$max_cols 	= count(max($data));
+	/* $max_cols 	= count(max($data));*/
 	$i=0;
 	/**
 	* tfoot position
@@ -199,13 +206,11 @@ private function csv_to_table($data,$args){
 */
 private function csv_to_array($csv, $delimiter = ',', $enclosure = '"', $escape = '\\', $terminator = "\n") {
 $r = array();
-
 $rows = str_getcsv($csv, $terminator,$enclosure,$escape); 
 $rows = array_diff($rows,Array(''));
 
 foreach($rows as &$row) {
-	$row = str_getcsv($row, $delimiter,$enclosure,$escape);
-	$r[] = $row;
+	$r[] = str_getcsv($row,$delimiter);
 }
 return $r;
 }
@@ -291,7 +296,6 @@ function easy_table_style() {
 	{
 	if($this->get_easy_table_option('loadcss')) {
 		wp_register_style('easy_table_style', plugins_url('easy-table-style.css', __FILE__),false,$this->easy_table_base('version'));
-		//wp_register_style('easy_table_style', plugins_url('/themes/aucity/style.css', __FILE__),false,$this->easy_table_base('version'));
 		wp_enqueue_style( 'easy_table_style');
 	}
 	}
@@ -330,6 +334,7 @@ if($this->get_easy_table_option('loadcss')) { ?>
 		font-size:1.3em;
 		display: inline-block;
 		text-shadow: 0 -1px 1px rgba(19,65,88,.8);
+		text-decoration:none;
 	}
 	.action-button a.green{
 		background:#48b826;
@@ -736,12 +741,18 @@ $api = plugins_api('plugin_information', array('slug' => 'easy-table' ));
 		<?php if ( ! empty($api->rating) ) : ?>
 		<h2><?php _e('Average Rating') ?></h2>
 		<div class="star-holder" title="<?php printf(_n('(based on %s rating)', '(based on %s ratings)', $api->num_ratings), number_format_i18n($api->num_ratings)); ?>">
+			<?php if ( version_compare( $GLOBALS['wp_version'], 3.4, '<') ) { ?>
 			<div class="star star-rating" style="width: <?php echo esc_attr($api->rating) ?>px"></div>
 			<div class="star star5"><img src="<?php echo admin_url('images/star.png?v=20110615'); ?>" alt="<?php esc_attr_e('5 stars') ?>" /></div>
 			<div class="star star4"><img src="<?php echo admin_url('images/star.png?v=20110615'); ?>" alt="<?php esc_attr_e('4 stars') ?>" /></div>
 			<div class="star star3"><img src="<?php echo admin_url('images/star.png?v=20110615'); ?>" alt="<?php esc_attr_e('3 stars') ?>" /></div>
 			<div class="star star2"><img src="<?php echo admin_url('images/star.png?v=20110615'); ?>" alt="<?php esc_attr_e('2 stars') ?>" /></div>
 			<div class="star star1"><img src="<?php echo admin_url('images/star.png?v=20110615'); ?>" alt="<?php esc_attr_e('1 star') ?>" /></div>
+			<?php
+			}
+			else { ?>
+			<div class="star star-rating" style="width: <?php echo esc_attr( str_replace( ',', '.', $api->rating ) ); ?>px"></div>
+			<?php } ?>
 		</div>
 		<small><?php printf(_n('(based on %s rating)', '(based on %s ratings)', $api->num_ratings), number_format_i18n($api->num_ratings)); ?></small>
 		<p><a target="_blank" href="http://wordpress.org/extend/plugins/easy-table/"><?php _e('Click here to rate','easy-table');?></a></p>
@@ -777,7 +788,8 @@ if (!function_exists('str_getcsv')) {
 		rewind($handle);
 		$line = -1;
 		$return = Array();
-		while (($data = fgetcsv($handle, 1000, $delimiter)) !== FALSE) {
+
+		while (($data = @fgetcsv($handle, 1000, $delimiter, $enclosure)) !== FALSE) {
 			$num = count($data);
 			for ($c=0; $c < $num; $c++) {
 			 if(!empty($data[$c])){ 
