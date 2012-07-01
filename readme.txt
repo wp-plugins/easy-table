@@ -3,8 +3,8 @@ Contributors: takien
 Donate link: http://takien.com/donate
 Tags: table,csv,csv-to-table,post,excel,csv file,widget,tablesorter
 Requires at least: 3.0
-Tested up to: 3.4
-Stable tag: 0.7
+Tested up to: 3.4.1
+Stable tag: 0.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -49,6 +49,51 @@ no[attr width="20"],head1,head2,head3
 4,row4col1,row4col2,row4col3
 [/table]`
 
+* Table with initial sort order using table parameter, sort by first column descending
+`[table sort="desc"]
+no,head1,head2,head3
+1,row1col1,row1col2,row1col3]
+2,row2col1,row2col2,row2col3
+3,row3col1,row3col2,row3col3
+4,row4col1,row4col2,row4col3
+[/table]`
+
+* Table with initial sort order using table parameter, sort by first column descending, and second column ascending
+`[table sort="desc,asc"]
+no,head1,head2,head3
+1,row1col1,row1col2,row1col3]
+2,row2col1,row2col2,row2col3
+3,row3col1,row3col2,row3col3
+4,row4col1,row4col2,row4col3
+[/table]`
+
+* Table with initial sort order using cell attr, sort by second column descending
+`[table]
+no,head1[attr sort="desc"],head2,head3
+1,row1col1,row1col2,row1col3]
+2,row2col1,row2col2,row2col3
+3,row3col1,row3col2,row3col3
+4,row4col1,row4col2,row4col3
+[/table]`
+
+* Disable sort for third column using cell attr
+`[table]
+no,head1,head2[attr sort="false"],head3
+1,row1col1,row1col2,row1col3]
+2,row2col1,row2col2,row2col3
+3,row3col1,row3col2,row3col3
+4,row4col1,row4col2,row4col3
+[/table]`
+
+* Disable sort for third column using table parameter
+`[table sort=",,false"]
+no,head1,head2,head3
+1,row1col1,row1col2,row1col3]
+2,row2col1,row2col2,row2col3
+3,row3col1,row3col2,row3col3
+4,row4col1,row4col2,row4col3
+[/table]`
+
 * Table with no heading
 `[table th="0"]some data here[/table]`
 
@@ -63,6 +108,8 @@ no[attr width="20"],head1,head2,head3
 
 * Table from CSV file
 `[table file="example.com/blog/wp-content/uploads/pricelist.csv"][/table]`
+
+[Look confusing? Please click here](http://takien.com/plugins/easy-table).
 
 = Other notes =
 * Data in each cell must not have line break, otherwise it will be detected as new row.
@@ -92,6 +139,23 @@ There are many ways to install this plugin, e.g:
 No
 
 == Changelog ==
+
+= 0.8 =
+* Fixed: Csvfile option
+* Fixed: Broken caption in Responsive theme
+* Removed: Clearfix class from the table
+* Changed: Now use wp_remote_get() instead of file_get_contents();
+* Changed: Method name from get_easy_table_option() to option(), not affected to the usability
+* Changed: .header class for thead changed to .easy-table-header to minimize conflict possibility with other CSS.
+* Changed: path to jquery.tablesorter to /js and combined with jquery metadata
+* Added: jquery.metadata.js to set additional sorting option
+* Added: themes selector
+* Added: css/easy-table.css for general basic styling
+* Added: New sort parameter on table eg. [table sort="desc,asc"]
+* Added: New sort attr on cell for default sorting, attr sort="desc",  attr sort="desc",  attr sort="false"
+* Added: htaccess file to prevent directory listing on plugin path.
+* Added: Compatibility with WordPress 3.4.1
+* Improved: CSS for arrow up/down, arrow now only visible on mouseover or if column is sorted.
 
 = 0.7 =
 * Fixed: Enclosure in the first column does not work.

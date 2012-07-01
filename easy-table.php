@@ -4,7 +4,7 @@ Plugin Name: Easy Table
 Plugin URI: http://takien.com/
 Description: Create table in post, page, or widget in easy way.
 Author: Takien
-Version: 0.7
+Version: 0.8
 Author URI: http://takien.com/
 */
 
@@ -39,7 +39,7 @@ var $settings 	= Array(
 	'attrtag'		=> 'attr',
 	'tablewidget'	=> false,
 	'scriptloadin'	=> Array('is_single','is_page'),
-	'class'			=> 'table-striped',
+	'class'			=> '',
 	'caption'		=> false,
 	'width'			=> '100%',
 	'align'			=> 'left',
@@ -74,9 +74,9 @@ function __construct(){
 	add_action('wp_enqueue_scripts', array(&$this,'easy_table_style'));
 	add_action('admin_menu', 		 array(&$this,'easy_table_add_page'));
 	add_action('contextual_help', 	 array(&$this,'easy_table_help'));
-	add_shortcode($this->get_easy_table_option('shortcodetag'),  array(&$this,'easy_table_short_code'));
-	add_shortcode($this->get_easy_table_option('attrtag'),  array(&$this,'easy_table_short_code_attr'));
-	if($this->get_easy_table_option('tablewidget')){
+	add_shortcode($this->option('shortcodetag'),  array(&$this,'easy_table_short_code'));
+	add_shortcode($this->option('attrtag'),  array(&$this,'easy_table_short_code_attr'));
+	if($this->option('tablewidget')){
 		add_filter('widget_text', 		'do_shortcode');
 	}
 }
@@ -84,7 +84,7 @@ function __construct(){
 private function easy_table_base($return){
 	$easy_table_base = Array(
 				'name' 			=> 'Easy Table',
-				'version' 		=> '0.7',
+				'version' 		=> '0.8',
 				'plugin-domain'	=> 'easy-table'
 	);
 	return $easy_table_base[$return];
@@ -92,20 +92,21 @@ private function easy_table_base($return){
 
 function easy_table_short_code($atts, $content="") {
 	$shortcode_atts = shortcode_atts(array(
-		'class' 		=> $this->get_easy_table_option('class'),
-		'caption' 		=> $this->get_easy_table_option('caption'),
-		'width' 		=> $this->get_easy_table_option('width'),
-		'align' 		=> $this->get_easy_table_option('align'),
-		'th'	  		=> $this->get_easy_table_option('th'),
-		'tf'	  		=> $this->get_easy_table_option('tf'),
-		'border'		=> $this->get_easy_table_option('border'),
-		'id'	  		=> $this->get_easy_table_option('id'),
-		'theme'			=> $this->get_easy_table_option('theme'),
-		'tablesorter'	=> $this->get_easy_table_option('tablesorter'),
-		'delimiter'		=> $this->get_easy_table_option('delimiter'),
-		'enclosure' 	=> $this->get_easy_table_option('enclosure'),
-		'escape' 		=> $this->get_easy_table_option('escape'),
-		'file'			=> $this->get_easy_table_option('file')
+		'class' 		=> $this->option('class'),
+		'caption' 		=> $this->option('caption'),
+		'width' 		=> $this->option('width'),
+		'align' 		=> $this->option('align'),
+		'th'	  		=> $this->option('th'),
+		'tf'	  		=> $this->option('tf'),
+		'border'		=> $this->option('border'),
+		'id'	  		=> $this->option('id'),
+		'theme'			=> $this->option('theme'),
+		'tablesorter'	=> $this->option('tablesorter'),
+		'delimiter'		=> $this->option('delimiter'),
+		'enclosure' 	=> $this->option('enclosure'),
+		'escape' 		=> $this->option('escape'),
+		'file'			=> $this->option('file'),
+		'sort'          => ''
 	 ), $atts);
 	/**
 	* because clean_pre is deprecated since WordPress 3.4, then replace it manually
@@ -139,20 +140,37 @@ function easy_table_short_code_attr($atts){
 */
 private function csv_to_table($data,$args){
 	extract($args);
-	
-	if($file){
-		$data = @file_get_contents($file);
+	if( $this->option('csvfile') AND $file ){
+		/*$data = @file_get_contents($file);*/
+		/** use wp_remote_get
+		* @since 0.8
+		*/
+		$data = '';
+		$response = wp_remote_get($file);
+		if( $response['response']['code'] == 200 ) {
+			$data = $response['body'];
+		}
 	}
-	/**
-	* @todo check if $file url has special character that need to be urlencoded.
-	*/
 
 	if(empty($data)) return false;
 	if(!is_array($data)){
 		$data 	= $this->csv_to_array(trim($data), $delimiter, $enclosure, $escape);
 	}
-	/* $max_cols 	= count(max($data));*/
-	$i=0;
+	$max_cols 	= count(max($data));
+
+	$r=0;
+	
+	/**
+	* initialize inline sort, 
+	* extract header sort if any, and equalize with max column number
+	* @since 0.8
+	*/
+	if( $tablesorter ) {
+		$inline_sort = Array();
+		$header_sort = explode(',',$sort);
+		$header_sort = array_pad($header_sort,$max_cols,NULL);
+	}
+	
 	/**
 	* tfoot position
 	* @since 0.4
@@ -165,39 +183,91 @@ private function csv_to_table($data,$args){
 	} else {
 		$width = (int)$width.'px';
 	}
-	$output = '<table '.($id ? 'id="'.$id.'"':'').' style="width:'.$width.';'.(($align=='center') ? 'margin-left:auto;margin-right:auto' : '').'" width="'.(int)$width.'" align="'.$align.'" class="table clearfix '.($tablesorter ? 'tablesorter ':'').$class.'" '.(($border !=='0') ? 'border="'.$border.'"' : '').'>'."\n";
+	$output = '<table '.($id ? 'id="'.$id.'"':'').' style="width:'.$width.';'.(($align=='center') ? 'margin-left:auto;margin-right:auto' : '').'" width="'.$width.'" align="'.$align.'" class="easy-table easy-table-'.$theme.' '.($tablesorter ? 'tablesorter __sortlist__ ':'').$class.'" '.(($border !=='0') ? 'border="'.$border.'"' : '').'>'."\n";
+	
 	$output .= $caption ? '<caption>'.$caption.'</caption>'."\n" : '';
 	$output .= $th ? '<thead>' : (($tf !== 'last') ? '' : '<tbody>');
 	$output .= (!$th AND !$tf) ? '<tbody>':'';
 	
-	foreach($data as $k=>$cols){ $i++;
+	foreach($data as $k=>$cols){ $r++;
 		//$cols = array_pad($cols,$max_cols,'');
 		
-		$output .= (($i==$tfpos) AND $tf) ? (($tf=='last')?'</tbody>':'').'<tfoot>': '';
+		$output .= (($r==$tfpos) AND $tf) ? (($tf=='last')?'</tbody>':'').'<tfoot>': '';
 		$output .= "\r\n".'<tr>';
 
-		$thtd = ((($i==1) AND $th) OR (($i==$tfpos) AND $tf)) ? 'th' : 'td';
-		foreach($cols as $col){ 
+		$thtd = ((($r==1) AND $th) OR (($r==$tfpos) AND $tf)) ? 'th' : 'td';
+		foreach($cols as $c=>$col){
 			/**
 			* Add attribute for each cell
 			* @since 0.5
 			*/
-			$attr = preg_match('/\['.$this->get_easy_table_option('attrtag').' ([^\\]\\/]*(?:\\/(?!\\])[^\\]\\/]*)*?)/',$col,$matchattr);
+			preg_match('/\['.$this->option('attrtag').' ([^\\]\\/]*(?:\\/(?!\\])[^\\]\\/]*)*?)/',$col,$matchattr);
 			$attr = isset($matchattr[1]) ? $matchattr[1] : '';
 				/**
-				* retrieve colspan value, not used at this time
-				$colspan = shortcode_parse_atts($attr);
-				$colspan = $colspan['colspan']; 
-				*/
+				* extract $attr value
+				* @since 0.8
+				* this is for inline sorting option, 
+				* eg [attr sort="desc"],[attr sort="asc"] or [attr sort="none"]
+				* only affect if it's TH and $tablesorter enabled
+				* extract sort value and insert appropriate class value.
+				*/ 
+				
+				if( ('th' == $thtd) AND $tablesorter ) {
+					$attrs = $attr ? shortcode_parse_atts($attr) : Array();
+					$attrs['sort']  =  isset($attrs['sort']) ? $attrs['sort'] : $header_sort[$c];
+					$attrs['class'] =  isset($attrs['class']) ? $attrs['class'] : '';
+					
+					$inline_sort[$c] = $attrs['sort'];
+
+					$attr = '';
+					$sorter = in_array(strtolower($attrs['sort']),array('desc','asc')) ? '' : (!empty($attrs['sort']) ? 'false' : '');
+					foreach($attrs as $katr => $vatr){
+						if($katr == 'sort') {
+						}
+						else if(($katr == 'class')){
+							$attr .= "$katr='$vatr ";
+							$attr .= $sorter ? "{sorter: $sorter}":'';
+							$attr .= "' ";
+						}
+						else {
+							$attr .= "$katr='$vatr' ";
+						}
+					}
+				}
 			$output .= "<$thtd $attr>".do_shortcode($col)."</$thtd>\n";
 		}
 	
 		$output .= '</tr>'."\n";
-		$output .= (($i==1) AND $th) ? '</thead>'."\n".'<tbody>' : '';
-		$output .= (($i==$tfpos) AND $tf) ? '</tfoot>'.((($tf==1) AND !$th) ? '<tbody>':''): '';
+		$output .= (($r==1) AND $th) ? '</thead>'."\n".'<tbody>' : '';
+		$output .= (($r==$tfpos) AND $tf) ? '</tfoot>'.((($tf==1) AND !$th) ? '<tbody>':''): '';
 		
 	}
 	$output .= (($tf!=='last')?'</tbody>':'').'</table>';
+	
+	/** 
+	* Build sortlist metadata and append it to the table class
+	* @since 0.8
+	* This intended to $tablesorter,
+	* so don't bother if $tablesorter is false/disabled
+	*/
+
+	
+	if( $tablesorter ) {
+		$sortlist = '';
+		$all_sort = array_replace($header_sort,$inline_sort);
+		
+		if(implode('',$all_sort)) {
+			$sortlist = '{sortlist: [';
+			foreach($all_sort as $k=>$v){
+				$v = (($v == 'desc') ? 1 : (($v == 'asc') ? 0 : '' ));
+				if($v !=='') {
+					$sortlist .= '['.$k.','.$v.'], ';
+				}
+			}
+			$sortlist .= ']}';
+		}
+		$output = str_replace('__sortlist__',$sortlist,$output);
+	}
 	return $output;
 }
 
@@ -218,7 +288,7 @@ return $r;
 /**
 * Retrieve options from database if any, or use default options instead.
 */
-function get_easy_table_option($key=''){
+function option($key=''){
 	$option = get_option('easy_table_plugin_option') ? get_option('easy_table_plugin_option') : Array();
 	$option = array_merge($this->settings,$option);
 	if($key){
@@ -229,6 +299,36 @@ function get_easy_table_option($key=''){
 	}
 	return $return;
 
+}
+
+/**
+* Retrieve themes directory
+* @since: 0.8
+*/
+
+function themes(){
+	/**
+	* delete theme cache on setting updated.
+	*/
+	if( ( 'easy-table' == $_GET['page']) AND isset($_GET['settings-updated']) ) {
+		delete_transient('easy_table_themes');
+	}
+	
+	if(!function_exists('scandir')){
+		return Array('default');
+	}
+	if ( false === ( $themes = get_transient( 'easy_table_themes' ) )) {
+	
+	$dir = plugin_dir_path(__FILE__).'themes/';
+	$dirs = scandir($dir);
+	foreach($dirs as $d){
+		if( (substr($d,0,1) !=='.') AND (is_dir($dir.$d)) ) {
+			$themes[] = $d;
+		}
+	}
+	set_transient( 'easy_table_themes', $themes , 86400 );
+	}
+	return $themes;
 }
 
 /**
@@ -263,6 +363,16 @@ function render_form($fields){
 			}
 			$output .= ' <span class="description">'.$field['description'].'</span></td></tr>';
 		}
+		if($field['type'] == 'select'){
+			$output .= '<tr><th><label>'.$field['label'].'</label></th>';
+			$output .= '<td>';
+			$output .= '<select name="'.$field['name'].'">';
+				foreach( (array)$field['values'] as $val=>$name ) {
+					$output .= '<option '.(($val==$field['value']) ? 'selected="selected"' : '' ).' value="'.$val.'">'.$name.'</option>';
+				}
+			$output .= '</select>';
+			$output .= ' <span class="description">'.$field['description'].'</span></td></tr>';
+		}
 	}
 	$output .= '</table>';
 	return $output;
@@ -272,14 +382,14 @@ function render_form($fields){
 * Register javascript
 */	
 function easy_table_script() {
-	if(	is_single() AND in_array('is_single',$this->get_easy_table_option('scriptloadin')) OR
-		is_page() AND in_array('is_page',$this->get_easy_table_option('scriptloadin')) OR 
-		is_home() AND in_array('is_home',$this->get_easy_table_option('scriptloadin')) OR 
-		is_archive() AND in_array('is_archive',$this->get_easy_table_option('scriptloadin')))
+	if(	is_single() AND in_array('is_single',$this->option('scriptloadin')) OR
+		is_page() AND in_array('is_page',$this->option('scriptloadin')) OR 
+		is_home() AND in_array('is_home',$this->option('scriptloadin')) OR 
+		is_archive() AND in_array('is_archive',$this->option('scriptloadin')))
 	{
-	if($this->get_easy_table_option('tablesorter')) {
+	if($this->option('tablesorter')) {
 		wp_enqueue_script('jquery');
-		wp_register_script('easy_table_script',plugins_url( 'jquery.tablesorter.min.js' , __FILE__ ),'jquery');
+		wp_register_script('easy_table_script',plugins_url( 'js/easy-table-script.js' , __FILE__ ),'jquery');
 		wp_enqueue_script('easy_table_script');
 	}
 	}
@@ -289,13 +399,14 @@ function easy_table_script() {
 * Register stylesheet
 */	
 function easy_table_style() {
-	if(	is_single() AND in_array('is_single',$this->get_easy_table_option('scriptloadin')) OR
-		is_page() AND in_array('is_page',$this->get_easy_table_option('scriptloadin')) OR 
-		is_home() AND in_array('is_home',$this->get_easy_table_option('scriptloadin')) OR 
-		is_archive() AND in_array('is_archive',$this->get_easy_table_option('scriptloadin')))
+	if(	is_single() AND in_array('is_single',$this->option('scriptloadin')) OR
+		is_page() AND in_array('is_page',$this->option('scriptloadin')) OR 
+		is_home() AND in_array('is_home',$this->option('scriptloadin')) OR 
+		is_archive() AND in_array('is_archive',$this->option('scriptloadin')))
 	{
-	if($this->get_easy_table_option('loadcss')) {
-		wp_register_style('easy_table_style', plugins_url('easy-table-style.css', __FILE__),false,$this->easy_table_base('version'));
+	if($this->option('loadcss')) {
+		//wp_register_style('easy_table_style', plugins_url('themes/aucity/style.css', __FILE__),false,$this->easy_table_base('version'));
+		wp_register_style('easy_table_style', plugins_url('themes/'.$this->option('theme').'/style.css', __FILE__),false,$this->easy_table_base('version'));
 		wp_enqueue_style( 'easy_table_style');
 	}
 	}
@@ -304,60 +415,13 @@ function easy_table_style() {
 function easy_table_admin_script(){
 $page = isset($_GET['page']) ? $_GET['page'] : '';
 if($page == $this->easy_table_base('plugin-domain')) { 
-if($this->get_easy_table_option('tablesorter')) { ?>
-<script src="<?php echo plugins_url( 'jquery.tablesorter.min.js' , __FILE__);?>"></script>
+if($this->option('tablesorter')) { ?>
+<script src="<?php echo plugins_url( 'js/easy-table-script.js' , __FILE__);?>"></script>
 <?php }
-if($this->get_easy_table_option('loadcss')) { ?>
-<link rel="stylesheet" href="<?php echo plugins_url('easy-table-style.css', __FILE__);?> " />
+if($this->option('loadcss')) { ?>
+<link rel="stylesheet" href="<?php echo plugins_url('themes/'.$this->option('theme').'/style.css?ver='.$this->easy_table_base('version'), __FILE__);?>" />
 <?php } ?>
-<style type="text/css">
-	.left,
-	.right{
-		float:left;
-		width:49%
-	}
-	.toggledesc{
-		float:right;
-		margin-right:20px;
-	}
-	.action-button{
-		margin-bottom:20px
-	}
-	.action-button a{
-		padding:10px;
-		border:1px solid #cccccc;
-		-webkit-border-radius: 5px;
-		-moz-border-radius: 5px;
-		border-radius: 5px; 
-		color:#fff;
-		font-weight:bold;
-		font-size:1.3em;
-		display: inline-block;
-		text-shadow: 0 -1px 1px rgba(19,65,88,.8);
-		text-decoration:none;
-	}
-	.action-button a.green{
-		background:#48b826;
-		border-color:#1d7003;
-		background: #b4e391;
-		background: -moz-linear-gradient(top, #b4e391 0%, #61c419 50%, #b4e391 100%);
-		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#b4e391), color-stop(50%,#61c419), color-stop(100%,#b4e391));
-		background: -webkit-linear-gradient(top, #b4e391 0%,#61c419 50%,#b4e391 100%);
-		background: -o-linear-gradient(top, #b4e391 0%,#61c419 50%,#b4e391 100%);
-		background: -ms-linear-gradient(top, #b4e391 0%,#61c419 50%,#b4e391 100%);
-		background: linear-gradient(top, #b4e391 0%,#61c419 50%,#b4e391 100%);
-	}
-	.action-button a.red{
-		background: #f85032;
-		background: -moz-linear-gradient(top, #f85032 0%, #f16f5c 35%, #f02f17 71%, #e73827 100%);
-		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f85032), color-stop(35%,#f16f5c), color-stop(71%,#f02f17), color-stop(100%,#e73827));
-		background: -webkit-linear-gradient(top, #f85032 0%,#f16f5c 35%,#f02f17 71%,#e73827 100%);
-		background: -o-linear-gradient(top, #f85032 0%,#f16f5c 35%,#f02f17 71%,#e73827 100%);
-		background: -ms-linear-gradient(top, #f85032 0%,#f16f5c 35%,#f02f17 71%,#e73827 100%);
-		background: linear-gradient(top, #f85032 0%,#f16f5c 35%,#f02f17 71%,#e73827 100%);
-		border-color:#cf3100;
-	}
-</style>
+<link rel="stylesheet" href="<?php echo plugins_url( 'css/admin-style.css?ver='.$this->easy_table_base('version') , __FILE__);?>" />
 <script type="text/javascript">
 //<![CDATA[
 	jQuery(document).ready(function($){
@@ -394,7 +458,6 @@ function easy_table_help($help) {
 		<ol><li>'.__('Once plugin installed, go to plugin options page to configure some options','easy-table').'</li>';
 		$help .= '<li>'.__('You are ready to write a table in post or page.','easy-table').'</li>';
 		$help .= '<li>'.__('To be able write table in widget you have to check <em>Enable render table in widget</em> option in the option page.','easy-table').'</li></ol>';
-		
 	return $help;
 	}
 }
@@ -434,7 +497,7 @@ settings_fields('easy_table_option_field');
 			'label'			=> __('Short code tag','easy-table'),
 			'type'			=> 'text',
 			'description'	=> __('Shortcode tag, type "table" if you want to use [table] short tag.','easy-table'),
-			'value'			=> $this->get_easy_table_option('shortcodetag')
+			'value'			=> $this->option('shortcodetag')
 			)
 		,
 		Array(
@@ -442,7 +505,7 @@ settings_fields('easy_table_option_field');
 			'label'			=> __('Cell attribute tag','easy-table'),
 			'type'			=> 'text',
 			'description'	=> __('Cell attribute tag, default is attr.','easy-table'),
-			'value'			=> $this->get_easy_table_option('attrtag')
+			'value'			=> $this->option('attrtag')
 			)
 		,Array(
 			'name'			=> 'easy_table_plugin_option[tablewidget]',
@@ -450,7 +513,7 @@ settings_fields('easy_table_option_field');
 			'type'			=> 'checkbox',
 			'description'	=> __('Check this if you want the table could be rendered in widget.','easy-table'),
 			'value'			=> 1,
-			'attr'			=> $this->get_easy_table_option('tablewidget') ? 'checked="checked"' : '')
+			'attr'			=> $this->option('tablewidget') ? 'checked="checked"' : '')
 		,Array(
 			'type'			=> 'checkboxgroup',
 			'grouplabel'	=> __('Only load JS/CSS when in this condition','easy-table'),
@@ -460,25 +523,25 @@ settings_fields('easy_table_option_field');
 								'name' 	=> 'easy_table_plugin_option[scriptloadin][]',
 								'label'	=> __('Single','easy-table'),
 								'value'	=> 'is_single',
-								'attr'	=> in_array('is_single',$this->get_easy_table_option('scriptloadin')) ? 'checked="checked"' : ''
+								'attr'	=> in_array('is_single',$this->option('scriptloadin')) ? 'checked="checked"' : ''
 								),
 								Array(
 								'name' 	=> 'easy_table_plugin_option[scriptloadin][]',
 								'label'	=> __('Page','easy-table'),
 								'value'	=> 'is_page',
-								'attr'	=> in_array('is_page',$this->get_easy_table_option('scriptloadin')) ? 'checked="checked"' : ''
+								'attr'	=> in_array('is_page',$this->option('scriptloadin')) ? 'checked="checked"' : ''
 								),
 								Array(
 								'name' 	=> 'easy_table_plugin_option[scriptloadin][]',
 								'label'	=> __('Front page','easy-table'),
 								'value'	=> 'is_home',
-								'attr'	=> in_array('is_home',$this->get_easy_table_option('scriptloadin')) ? 'checked="checked"' : ''
+								'attr'	=> in_array('is_home',$this->option('scriptloadin')) ? 'checked="checked"' : ''
 								),
 								Array(
 								'name' 	=> 'easy_table_plugin_option[scriptloadin][]',
 								'label'	=> __('Archive page','easy-table'),
 								'value'	=> 'is_archive',
-								'attr'	=> in_array('is_archive',$this->get_easy_table_option('scriptloadin')) ? 'checked="checked"' : ''
+								'attr'	=> in_array('is_archive',$this->option('scriptloadin')) ? 'checked="checked"' : ''
 								)
 								)
 		)
@@ -492,45 +555,45 @@ settings_fields('easy_table_option_field');
 			'type'			=> 'checkbox',
 			'value'			=> 1,
 			'description'	=> __('Check this to use tablesorter jQuery plugin','easy-table'),
-			'attr'			=> $this->get_easy_table_option('tablesorter') ? 'checked="checked"':'')
+			'attr'			=> $this->option('tablesorter') ? 'checked="checked"':'')
 		,Array(
 			'name'			=> 'easy_table_plugin_option[th]',
 			'label'			=> __('Use TH for the first row?','easy-table'),
 			'type'			=> 'checkbox',
 			'value'			=> 1,
 			'description'	=> __('Check this if you want to use first row as table head (required by tablesorter)','easy-table'),
-			'attr'			=> $this->get_easy_table_option('th') ? 'checked="checked"' : '')
+			'attr'			=> $this->option('th') ? 'checked="checked"' : '')
 		,Array(
 			'name'			=> 'easy_table_plugin_option[loadcss]',
 			'label'			=> __('Load CSS?','easy-table'),
 			'type'			=> 'checkbox',
 			'value'			=> 1,
 			'description'	=> __('Check this to use CSS included in this plugin to styling table, you may unceck if you want to write your own style.','easy-table'),
-			'attr'			=> $this->get_easy_table_option('loadcss') ? 'checked="checked"':'')	
+			'attr'			=> $this->option('loadcss') ? 'checked="checked"':'')	
 		,Array(
 			'name'			=> 'easy_table_plugin_option[class]',
 			'label'			=> __('Table class','easy-table'),
 			'type'			=> 'text',
-			'description'	=> __('Table class attribute, if you use bootstrap CSS, you should add at least "table" class.','easy-table'),
-			'value'			=> $this->get_easy_table_option('class'))
+			'description'	=> __('Additional table class attribute.','easy-table'),
+			'value'			=> $this->option('class'))
 		,Array(
 			'name'			=> 'easy_table_plugin_option[width]',
 			'label'			=> __('Table width','easy-table'),
 			'type'			=> 'text',
 			'description'	=> __('Table width, in pixel or percent (may be overriden by CSS)','easy-table'),
-			'value'			=> $this->get_easy_table_option('width'))
+			'value'			=> $this->option('width'))
 		,Array(
 			'name'			=> 'easy_table_plugin_option[align]',
 			'label'			=> __('Table align','easy-table'),
 			'type'			=> 'text',
 			'description'	=> __('Table align, left/right/center (may be overriden by CSS)','easy-table'),
-			'value'			=> $this->get_easy_table_option('align'))
+			'value'			=> $this->option('align'))
 		,Array(
 			'name'			=>'easy_table_plugin_option[border]',
 			'label'			=> __('Table border','easy-table'),
 			'type'			=> 'text',
 			'description'	=> __('Table border (may be overriden by CSS)','easy-table'),
-			'value'			=> $this->get_easy_table_option('border'))
+			'value'			=> $this->option('border'))
 	);
 	?>	
 
@@ -538,7 +601,21 @@ settings_fields('easy_table_option_field');
 	<?php
 		echo $this->render_form($fields);
 	?>
-		
+	<h3><?php _e('Theme selector','easy-table');?></h3>
+	<?php
+	$fields = Array(
+		Array(	
+			'name'			=> 'easy_table_plugin_option[theme]',
+			'label'			=> __('Default theme','easy-table'),
+			'type'			=> 'select',
+			'value'			=> $this->option('theme'),
+			'values'		=> array_combine($this->themes(),$this->themes()),
+			'description'	=> __('Select default theme of the table','easy-table'),
+			'attr'			=> $this->option('tablesorter') ? 'checked="checked"':'')
+	);
+		echo $this->render_form($fields);
+	?>
+	
 	<h3><?php _e('Parser Option','easy-table');?></h3>
 	<p><em><?php _e('Do not change this unless you know what you\'re doing','easy-table');?></em>
 	</p>
@@ -548,19 +625,19 @@ settings_fields('easy_table_option_field');
 			'name'			=> 'easy_table_plugin_option[delimiter]',
 			'label'			=> __('Delimiter','easy-table'),
 			'type'			=> 'text',
-			'value'			=> $this->get_easy_table_option('delimiter'),
+			'value'			=> $this->option('delimiter'),
 			'description'	=> __('CSV delimiter (default is comma)','easy-table'))
 		,Array(
 			'name'			=> 'easy_table_plugin_option[enclosure]',
 			'label'			=> __('Enclosure','easy-table'),
 			'type'			=> 'text',
-			'value'			=> htmlentities($this->get_easy_table_option('enclosure')),
+			'value'			=> htmlentities($this->option('enclosure')),
 			'description'	=> __('CSV enclosure (default is double quote)','easy-table'))
 		,Array(	
 			'name'			=> 'easy_table_plugin_option[escape]',
 			'label'			=> __('Escape','easy-table'),
 			'type'			=> 'text',
-			'value'			=> $this->get_easy_table_option('escape'),
+			'value'			=> $this->option('escape'),
 			'description'	=>__('CSV escape (default is backslash)','easy-table'))
 		,Array(
 			'name'			=> 'easy_table_plugin_option[csvfile]',
@@ -568,7 +645,7 @@ settings_fields('easy_table_option_field');
 			'type'			=> 'checkbox',
 			'value'			=> 1,
 			'description'	=> __('Check this if you also want to convert CSV file to table','easy-table'),
-			'attr'			=> $this->get_easy_table_option('csvfile') ? 'checked="checked"' : '')
+			'attr'			=> $this->option('csvfile') ? 'checked="checked"' : '')
 		);
 		echo $this->render_form($fields);
 	?>
@@ -582,7 +659,7 @@ settings_fields('easy_table_option_field');
 <?php
 $defaulttableexample = '
 [table caption="Just test table"]
-no[attr width="20"],head1,head2,head3
+no[attr style="width:20px"],head1,head2,head3
 1,row1col1,row1col2,row1col3
 2,row2col1,row2col2,row2col3
 3,row3col1[attr colspan="2"],row3col3
@@ -611,18 +688,52 @@ if(isset($_POST['test-easy-table-reset'])){
 <li><strong>id</strong>, <?php _e('default value','easy-table');?> <em>'false'</em></li>
 <li><strong>tablesorter</strong>, <?php _e('default value','easy-table');?> <em>'false'</em></li>
 <li><strong>file</strong>, <?php _e('default value','easy-table');?> <em>'false'</em></li>
+<li><strong>sort</strong>, <?php _e('default value','easy-table');?> <em>''</em></li>
+</ol>
+<h3><?php printf('Example usage of %s parameter','sort','easy-table');?></h3>
+<p><em>sort</em> <?php _e('parameter is for initial sorting order. Value for each column separated by comma. See example below:','easy-table');?></p>
+<ol>
+<li><?php _e('Set initial order of first column descending and second column ascending:','easy-table');?>
+<pre><code>[table sort="desc,asc"]
+col1,col2,col3
+col4,col5,col6
+[/table]</code></pre>
+</li>
+<li><?php _e('Set initial order of second column descending:','easy-table');?>
+<pre><code>[table sort=",desc,asc"]
+col1,col2,col3
+col4,col5,col6
+[/table]</code></pre>
+</li>
+<li><?php _e('Additionaly, sort option also can be set via sort attr in a cell. See example below','easy-table');?></li>
 </ol>
 <h3><?php _e('Cell attribute tag','easy-table');?></h3>
 <ol>
-	<li><strong>attr</strong>, <?php _e('To set attribute for cell eg. class, colspan, rowspan, etc','easy-table');?>
-	<br /><?php _e('Usage','easy-table');?>: <br />
+<li><p><strong>attr</strong>, <?php _e('To set attribute for cell eg. class, colspan, rowspan, etc','easy-table');?></p>
+	<p><?php _e('Example','easy-table');?>: </p>
 
 <pre><code>[table]
-col1,col2[attr width="200" class="someclass"],col3
+col1,col2[attr style="width:200px" class="someclass"],col3
 col4,col5,col6
 [/table]
-</code>
-	</pre>
+</code></pre>
+</li>
+
+<li><p><strong>attr sort</strong>, <?php _e('To set initial sort order, this is intended to TH (first row) only.','easy-table');?></p>
+	<p><?php _e('Example: sort second column descending ','easy-table');?> </p>
+
+<pre><code>[table]
+col1,col2[attr sort="desc"],col3
+col4,col5,col6
+[/table]
+</code></pre>
+<p><?php printf('To disable sort, use "%s". In the example below first column is not sortable','false','easy-table');?> </p>
+
+<pre><code>[table]
+col1[attr sort="false"],col2,col3
+col4,col5,col6
+[/table]
+</code></pre>
 </li>
 </ol>
 
@@ -642,8 +753,10 @@ col4,col5,col6
 <div class="clear"></div>
 
 <?php elseif($_GET['gettab'] == 'support') : ?>
-<p><a target="_blank" href="http://takien.com/plugins/easy-table"><?php _e('Full documentation, see here!','easy-table');?></a></p>
-<p><?php _e('Or you can use this discussion to get support, request feature or reporting bug.','easy-table');?></p>
+<p><?php _e('I have tried to make this plugin can be used as easy as possible and documentation as complete as possible. However it is also possible that you are still confused. Therefore feel free to ask. I would be happy to answer.','easy-table');?></p>
+<p><?php _e('You can use this discussion to get support, request feature or reporting bug.','easy-table');?></p>
+<p><a target="_blank" href="http://takien.com/plugins/easy-table"><?php _e('Before you ask something, make sure you have read documentation here!','easy-table');?></a></p>
+
 <div id="disqus_thread"></div>
 <script type="text/javascript">
 /* <![CDATA[ */
@@ -739,7 +852,7 @@ $api = plugins_api('plugin_information', array('slug' => 'easy-table' ));
 <?php endif; ?>
 		</ul>
 		<?php if ( ! empty($api->rating) ) : ?>
-		<h2><?php _e('Average Rating') ?></h2>
+		<h3><?php _e('Average Rating') ?></h3>
 		<div class="star-holder" title="<?php printf(_n('(based on %s rating)', '(based on %s ratings)', $api->num_ratings), number_format_i18n($api->num_ratings)); ?>">
 			<?php if ( version_compare( $GLOBALS['wp_version'], 3.4, '<') ) { ?>
 			<div class="star star-rating" style="width: <?php echo esc_attr($api->rating) ?>px"></div>
@@ -755,9 +868,32 @@ $api = plugins_api('plugin_information', array('slug' => 'easy-table' ));
 			<?php } ?>
 		</div>
 		<small><?php printf(_n('(based on %s rating)', '(based on %s ratings)', $api->num_ratings), number_format_i18n($api->num_ratings)); ?></small>
-		<p><a target="_blank" href="http://wordpress.org/extend/plugins/easy-table/"><?php _e('Click here to rate','easy-table');?></a></p>
-		<h3><?php _e('Credit','easy-table');?>:</h3>
-<p><?php _e('Tablesorter by','easy-table');?> <a target="_blank" href="http://tablesorter.com">tablesorter</a>, <?php _e('CSS by','easy-table');?> <a target="_blank" href="http://twitter.github.com/bootstrap">Twitter Bootstrap</a></p>
+		
+		
+		<h3><?php _e('Support my work with donation','easy-table');?>:</h3>
+		
+		<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----
+">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+<p><?php _e('Don\'t have money? No problem, you can rate my plugin instead.','easy-table');?> 
+<a target="_blank" href="http://wordpress.org/extend/plugins/easy-table/"><?php _e('Click here to rate','easy-table');?></a></p>
+
+<h3><?php _e('Thanks to','easy-table');?>:</h3>
+		
+<ul>
+<li><a target="_blank" href="<?php echo site_url();?>">You</a></li>
+<li><a target="_blank" href="http://php.net">PHP</a></li>
+<li><a target="_blank" href="http://wordpress.org">WordPress</a></li>
+<li>Tablesorter <?php _e('by','easy-table');?> <a target="_blank" href="http://tablesorter.com">Christian Bach</a></li>
+<li>CSS <?php _e('by','easy-table');?> <a target="_blank" href="http://twitter.github.com/bootstrap">Twitter Bootstrap</a></li>
+<li>jQuery metadata <?php _e('by','easy-table');?> <a target="_blank" href="https://github.com/jquery/jquery-metadata/">John Resig</a></li>
+<li>CuscoSky table styles <?php _e('by','easy-table');?> <a target="_blank" href="http://www.buayacorp.com">Braulio Soncco</a></li>
+
+</ul>
 		<?php endif; ?>
 	</div>
 <?php endif; ?>
@@ -801,5 +937,15 @@ if (!function_exists('str_getcsv')) {
 		fclose($handle);
 		return $return;
 		}
+	}
+}
+if(!function_exists('array_replace')) {
+	function array_replace(){
+		$array=array();   
+		$n=func_num_args();
+		while ($n-- >0) {
+			$array+=func_get_arg($n);
+		}
+		return $array;
 	}
 }
