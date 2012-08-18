@@ -95,46 +95,46 @@ no,head1,head2,head3
 [/table]`
 
 * Table with auto index, start from number 1 (since 0.9)
-[table ai="1"]
+`[table ai="1"]
 head1,head2,head3
 row1col1,row1col2,row1col3
 row2col1,row2col2,row2col3
 row3col1,row3col2,row3col3
 row4col1,row4col2,row4col3
-[/table]
+[/table]`
 
 * Table with auto index, start from number 2 (since 0.9)
-[table ai="2"]
+`[table ai="2"]
 head1,head2,head3
 row1col1,row1col2,row1col3
 row2col1,row2col2,row2col3
 row3col1,row3col2,row3col3
 row4col1,row4col2,row4col3
-[/table]
+[/table]`
 
 * Table with auto index, start from number 1, and titled No. (since 0.9)
-[table ai="1/No."]
+`[table ai="1/No."]
 head1,head2,head3
 row1col1,row1col2,row1col3
 row2col1,row2col2,row2col3
 row3col1,row3col2,row3col3
 row4col1,row4col2,row4col3
-[/table]
+[/table]`
 
 * Table with auto index, start from number 1, titled No., and column width 50px (since 0.9)
-[table ai="1/No./50"]
+`[table ai="1/No./50"]
 head1,head2,head3
 row1col1,row1col2,row1col3
 row2col1,row2col2,row2col3
 row3col1,row3col2,row3col3
 row4col1,row4col2,row4col3
-[/table]
+[/table]`
 
 * Table with new line in a cell (since 0.9)
 any nl value would be replaced with new line while rendered.
 nl could be one character or more. Be wise to use character here, make sure it's not very common character that may used in your data.
 
-[table nl="~~"]
+`[table nl="~~"]
 head1,head2,head3
 row1col1,row1col2,this~~should~~be~~in~~one cell
 row2col1,row2col2,this~~
@@ -146,7 +146,7 @@ one~~
 cell
 row3col1,row3col2,row3col3
 row4col1,row4col2,row4col3
-[/table]
+[/table]`
 
 * Table with no heading
 `[table th="0"]some data here[/table]`
