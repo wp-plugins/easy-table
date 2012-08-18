@@ -4,7 +4,7 @@ Donate link: http://takien.com/donate
 Tags: table,csv,csv-to-table,post,excel,csv file,widget,tablesorter
 Requires at least: 3.0
 Tested up to: 3.4.1
-Stable tag: 0.8
+Stable tag: 0.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -52,7 +52,7 @@ no[attr width="20"],head1,head2,head3
 * Table with initial sort order using table parameter, sort by first column descending
 `[table sort="desc"]
 no,head1,head2,head3
-1,row1col1,row1col2,row1col3]
+1,row1col1,row1col2,row1col3
 2,row2col1,row2col2,row2col3
 3,row3col1,row3col2,row3col3
 4,row4col1,row4col2,row4col3
@@ -61,7 +61,7 @@ no,head1,head2,head3
 * Table with initial sort order using table parameter, sort by first column descending, and second column ascending
 `[table sort="desc,asc"]
 no,head1,head2,head3
-1,row1col1,row1col2,row1col3]
+1,row1col1,row1col2,row1col3
 2,row2col1,row2col2,row2col3
 3,row3col1,row3col2,row3col3
 4,row4col1,row4col2,row4col3
@@ -70,7 +70,7 @@ no,head1,head2,head3
 * Table with initial sort order using cell attr, sort by second column descending
 `[table]
 no,head1[attr sort="desc"],head2,head3
-1,row1col1,row1col2,row1col3]
+1,row1col1,row1col2,row1col3
 2,row2col1,row2col2,row2col3
 3,row3col1,row3col2,row3col3
 4,row4col1,row4col2,row4col3
@@ -79,7 +79,7 @@ no,head1[attr sort="desc"],head2,head3
 * Disable sort for third column using cell attr
 `[table]
 no,head1,head2[attr sort="false"],head3
-1,row1col1,row1col2,row1col3]
+1,row1col1,row1col2,row1col3
 2,row2col1,row2col2,row2col3
 3,row3col1,row3col2,row3col3
 4,row4col1,row4col2,row4col3
@@ -88,11 +88,65 @@ no,head1,head2[attr sort="false"],head3
 * Disable sort for third column using table parameter
 `[table sort=",,false"]
 no,head1,head2,head3
-1,row1col1,row1col2,row1col3]
+1,row1col1,row1col2,row1col3
 2,row2col1,row2col2,row2col3
 3,row3col1,row3col2,row3col3
 4,row4col1,row4col2,row4col3
 [/table]`
+
+* Table with auto index, start from number 1 (since 0.9)
+[table ai="1"]
+head1,head2,head3
+row1col1,row1col2,row1col3
+row2col1,row2col2,row2col3
+row3col1,row3col2,row3col3
+row4col1,row4col2,row4col3
+[/table]
+
+* Table with auto index, start from number 2 (since 0.9)
+[table ai="2"]
+head1,head2,head3
+row1col1,row1col2,row1col3
+row2col1,row2col2,row2col3
+row3col1,row3col2,row3col3
+row4col1,row4col2,row4col3
+[/table]
+
+* Table with auto index, start from number 1, and titled No. (since 0.9)
+[table ai="1/No."]
+head1,head2,head3
+row1col1,row1col2,row1col3
+row2col1,row2col2,row2col3
+row3col1,row3col2,row3col3
+row4col1,row4col2,row4col3
+[/table]
+
+* Table with auto index, start from number 1, titled No., and column width 50px (since 0.9)
+[table ai="1/No./50"]
+head1,head2,head3
+row1col1,row1col2,row1col3
+row2col1,row2col2,row2col3
+row3col1,row3col2,row3col3
+row4col1,row4col2,row4col3
+[/table]
+
+* Table with new line in a cell (since 0.9)
+any nl value would be replaced with new line while rendered.
+nl could be one character or more. Be wise to use character here, make sure it's not very common character that may used in your data.
+
+[table nl="~~"]
+head1,head2,head3
+row1col1,row1col2,this~~should~~be~~in~~one cell
+row2col1,row2col2,this~~
+also~~
+should~~
+be~~
+in~~
+one~~
+cell
+row3col1,row3col2,row3col3
+row4col1,row4col2,row4col3
+[/table]
 
 * Table with no heading
 `[table th="0"]some data here[/table]`
@@ -139,6 +193,16 @@ There are many ways to install this plugin, e.g:
 No
 
 == Changelog ==
+
+= 0.9 =
+* Fixed: Allow empty cell (was stripped on PHP prior to 5.3)
+* Fixed: wp_remote_get() error if file URL was not found.
+* Fixed: wrong application of wp_enqueue_script()
+* Added: Allow script to be loaded in footer
+* Removed: Redundant line on wp_enqueue_style
+* Added: CSS for tfoot on cuscosky theme
+* Added: New table parameter "nl", new line. eg. [table nl="~~"] See example here http://wordpress.org/extend/plugins/easy-table/
+* Added: New table parameter "ai", auto index. add auto numbering in the begining of each row. See example here http://wordpress.org/extend/plugins/easy-table/
 
 = 0.8 =
 * Fixed: Csvfile option

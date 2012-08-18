@@ -4,7 +4,7 @@ Plugin Name: Easy Table
 Plugin URI: http://takien.com/
 Description: Create table in post, page, or widget in easy way.
 Author: Takien
-Version: 0.8
+Version: 0.9
 Author URI: http://takien.com/
 */
 
@@ -50,10 +50,12 @@ var $settings 	= Array(
 	'theme'			=> 'default',
 	'tablesorter' 	=> false,
 	'loadcss' 		=> true,
+	'scriptinfooter'=> false,
 	'delimiter'		=> ',',
 	'file'			=> false,
 	'enclosure' 	=> '&quot;',
 	'escape' 		=> '\\',
+	'nl'            => '~~',
 	'csvfile'		=> false
 );
 
@@ -84,7 +86,7 @@ function __construct(){
 private function easy_table_base($return){
 	$easy_table_base = Array(
 				'name' 			=> 'Easy Table',
-				'version' 		=> '0.8',
+				'version' 		=> '0.9',
 				'plugin-domain'	=> 'easy-table'
 	);
 	return $easy_table_base[$return];
@@ -106,7 +108,9 @@ function easy_table_short_code($atts, $content="") {
 		'enclosure' 	=> $this->option('enclosure'),
 		'escape' 		=> $this->option('escape'),
 		'file'			=> $this->option('file'),
-		'sort'          => ''
+		'sort'          => '',
+		'nl'            => $this->option('nl'),
+		'ai'            => false
 	 ), $atts);
 	/**
 	* because clean_pre is deprecated since WordPress 3.4, then replace it manually
@@ -147,13 +151,28 @@ private function csv_to_table($data,$args){
 		*/
 		$data = '';
 		$response = wp_remote_get($file);
-		if( $response['response']['code'] == 200 ) {
+		/**
+			notify if error reading file.
+			@since 0.9
+		*/
+		if( is_wp_error( $response ) ) {
+		   return '<div style="color:red">Error reading file/URL.</div>';
+		} else if( $response['response']['code'] == 200 ) {
 			$data = $response['body'];
 		}
 	}
 
 	if(empty($data)) return false;
 	if(!is_array($data)){
+		/**
+		normalize nl, since it may contains new line.
+		@since 0.9
+		*/
+		$data = preg_replace('/'.preg_quote($nl).'([\s\r\n\t]+)?/i',$nl,$data);
+		
+		/*
+		convert csv to array.
+		*/
 		$data 	= $this->csv_to_array(trim($data), $delimiter, $enclosure, $escape);
 	}
 	$max_cols 	= count(max($data));
@@ -196,6 +215,29 @@ private function csv_to_table($data,$args){
 		$output .= "\r\n".'<tr>';
 
 		$thtd = ((($r==1) AND $th) OR (($r==$tfpos) AND $tf)) ? 'th' : 'td';
+/**
+ai is auto index
+@since 0.9
+add auto numbering in the begining of each row
+ai="true" or ai="1" number will start from 1,
+ai="n", n = any number, number will start from that.
+
+Another possible value.
+ai="n/head/width"
+n     = index start
+head  = head text, default is No.
+width = column width, in pixel. Default is 20px
+ai head, text to shown in the table head row, default is No.
+
+*/		
+		$index       = explode('/',$ai);
+		$indexnum    = ((int)$index[0])+$r;
+		$indexnum    = $th ? $indexnum-2 : $indexnum-1;
+		$indexnum    = ($tf AND ($tf !== 'last')) ? $indexnum-1 : $indexnum;
+		$indexhead   = isset($index[1]) ? $index[1] : 'No.';
+		$indexwidth  = isset($index[2]) ? (int)$index[2] : 30;
+		$output .= ($ai AND ($thtd == 'td'))  ? '<'.$thtd.' style="width:'.$indexwidth.'px">'.$indexnum."</$thtd>" : ($ai ? "<$thtd>".$indexhead."</$thtd>" : '');
+		
 		foreach($cols as $c=>$col){
 			/**
 			* Add attribute for each cell
@@ -234,6 +276,11 @@ private function csv_to_table($data,$args){
 						}
 					}
 				}
+			/**
+			nl, replace nl with new line
+			@since 0.9
+			*/
+			$col     = str_replace($nl,'<br />',$col);
 			$output .= "<$thtd $attr>".do_shortcode($col)."</$thtd>\n";
 		}
 	
@@ -388,9 +435,7 @@ function easy_table_script() {
 		is_archive() AND in_array('is_archive',$this->option('scriptloadin')))
 	{
 	if($this->option('tablesorter')) {
-		wp_enqueue_script('jquery');
-		wp_register_script('easy_table_script',plugins_url( 'js/easy-table-script.js' , __FILE__ ),'jquery');
-		wp_enqueue_script('easy_table_script');
+		wp_enqueue_script('easy_table_script',plugins_url( 'js/easy-table-script.js' , __FILE__ ),array('jquery'),$this->easy_table_base('version'),$this->option('scriptinfooter'));
 	}
 	}
 }
@@ -405,9 +450,7 @@ function easy_table_style() {
 		is_archive() AND in_array('is_archive',$this->option('scriptloadin')))
 	{
 	if($this->option('loadcss')) {
-		//wp_register_style('easy_table_style', plugins_url('themes/aucity/style.css', __FILE__),false,$this->easy_table_base('version'));
-		wp_register_style('easy_table_style', plugins_url('themes/'.$this->option('theme').'/style.css', __FILE__),false,$this->easy_table_base('version'));
-		wp_enqueue_style( 'easy_table_style');
+		wp_enqueue_style('easy_table_style', plugins_url('themes/'.$this->option('theme').'/style.css', __FILE__),false,$this->easy_table_base('version'));
 	}
 	}
 }
@@ -545,6 +588,15 @@ settings_fields('easy_table_option_field');
 								)
 								)
 		)
+		,Array(
+			'name'			=> 'easy_table_plugin_option[scriptinfooter]',
+			'label'			=> __('Load script on footer?','easy-table'),
+			'type'			=> 'checkbox',
+			'description'	=> __('Check this if you want the script to be rendered in footer. Try to check or uncheck this if you experienced conflict with another JavaScript library (not guaranteed though).','easy-table'),
+			'value'			=> 1,
+			'attr'			=> $this->option('scriptinfooter') ? 'checked="checked"' : ''
+		)
+		
 	);
 	echo $this->render_form($fields);
 
@@ -622,6 +674,12 @@ settings_fields('easy_table_option_field');
 	<?php
 	$fields = Array(
 		Array(
+			'name'			=> 'easy_table_plugin_option[nl]',
+			'label'			=> __('New line replacement','easy-table'),
+			'type'			=> 'text',
+			'value'			=> $this->option('nl'),
+			'description'	=> __('Since new line is used by parser, you need specify character as a replacement.','easy-table'))
+		,Array(
 			'name'			=> 'easy_table_plugin_option[delimiter]',
 			'label'			=> __('Delimiter','easy-table'),
 			'type'			=> 'text',
@@ -928,10 +986,8 @@ if (!function_exists('str_getcsv')) {
 		while (($data = @fgetcsv($handle, 1000, $delimiter, $enclosure)) !== FALSE) {
 			$num = count($data);
 			for ($c=0; $c < $num; $c++) {
-			 if(!empty($data[$c])){ 
 				$line++;
 				$return[$line] = $data[$c];
-			}
 			}
 		}
 		fclose($handle);

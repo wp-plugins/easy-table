@@ -25,7 +25,8 @@ table.easy-table-cuscosky, .easy-table-cuscosky th, .easy-table-cuscosky td {
 	padding: 4px;
 }
 
-.easy-table-cuscosky thead th {
+.easy-table-cuscosky thead th,
+.easy-table-cuscosky tfoot th {
 	text-align: center;
 	background: #E6EDF5;
 	color: #4F76A3;
