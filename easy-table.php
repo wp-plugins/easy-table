@@ -105,7 +105,7 @@ function __construct(){
 private function easy_table_base($return){
 	$easy_table_base = Array(
 				'name' 			=> 'Easy Table',
-				'version' 		=> '0.1',
+				'version' 		=> '1.0',
 				'plugin-domain'	=> 'easy-table'
 	);
 	return $easy_table_base[$return];
@@ -330,7 +330,7 @@ ai head, text to shown in the table head row, default is No.
 			 /*trim cell content?
 			 @since 1.0
 			 */
-			$cell  = $trim ? trim($cell) : $cell;
+			$cell  = $trim ? trim(str_replace('&nbsp;','',$cell)) : $cell;
 			
 			/*nl2br? only if terminator is not \n or \r*/
 			if(( '\n' !== $terminator )  OR ( '\r' !== $terminator )) {
