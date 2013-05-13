@@ -218,7 +218,6 @@ No
 = 1.1.1 =
 * Fixed bug custom terminator doesn't work on version 1.1
 * Removed align field on Option page
-* Removed nl2br if terminator is not \n nor \r
 
 = 1.1 = 
 * Removed: .htaccess from plugin directory (Fixed unloaded script on some servers)

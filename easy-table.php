@@ -314,6 +314,10 @@ ai head, text to shown in the table head row, default is No.
 			 */
 			$cell  = $trim ? trim(str_replace('&nbsp;','',$cell)) : $cell;
 			
+			/*nl2br? only if terminator is not \n or \r*/
+			if(( '\n' !== $terminator )  OR ( '\r' !== $terminator )) {
+				$cell = nl2br($cell);
+			}	
 			/*colalign
 			 @since 1.0
 			 */
