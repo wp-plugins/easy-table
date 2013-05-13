@@ -4,7 +4,7 @@ Plugin Name: Easy Table
 Plugin URI: http://takien.com/
 Description: Create table in post, page, or widget in easy way.
 Author: Takien
-Version: 1.1
+Version: 1.1.1
 Author URI: http://takien.com/
 */
 
@@ -88,7 +88,7 @@ function __construct(){
 private function easy_table_base($return){
 	$easy_table_base = Array(
 				'name' 			=> 'Easy Table',
-				'version' 		=> '1.1',
+				'version' 		=> '1.1.1',
 				'plugin-domain'	=> 'easy-table'
 	);
 	return $easy_table_base[$return];
@@ -314,10 +314,6 @@ ai head, text to shown in the table head row, default is No.
 			 */
 			$cell  = $trim ? trim(str_replace('&nbsp;','',$cell)) : $cell;
 			
-			/*nl2br? only if terminator is not \n or \r*/
-			if(( '\n' !== $terminator )  OR ( '\r' !== $terminator )) {
-				$cell = nl2br($cell);
-			}
 			/*colalign
 			 @since 1.0
 			 */
@@ -745,12 +741,6 @@ settings_fields('easy_table_option_field');
 			'description'	=> __('Table width, in pixel or percent (may be overriden by CSS)','easy-table'),
 			'value'			=> $this->option('width'))
 		,Array(
-			'name'			=> 'easy_table_plugin_option[align]',
-			'label'			=> __('Table align','easy-table'),
-			'type'			=> 'text',
-			'description'	=> __('Table align, left/right/center (may be overriden by CSS)','easy-table'),
-			'value'			=> $this->option('align'))
-		,Array(
 			'name'			=>'easy_table_plugin_option[border]',
 			'label'			=> __('Table border','easy-table'),
 			'type'			=> 'text',
@@ -1133,7 +1123,6 @@ $api = plugins_api('plugin_information', array('slug' => 'easy-table' ));
 		<?php endif; ?>
 	</div>
 <?php endif; ?>
-
 </div><!--wrap-->
 
 <?php
@@ -1155,6 +1144,17 @@ function easy_table_init() {
 */	
 if (!function_exists('easy_table_str_getcsv')) {
 	function easy_table_str_getcsv($input, $delimiter = ",", $enclosure = '"', $escape = "\\"){
+		
+		/** 
+		* Bug fix, custom terminator wont work
+		* @since version 1.1.1
+		*/
+		if( ("\r" === $delimiter) OR ("\n" === $delimiter) ) {
+		}
+		else {
+			$input = str_replace("\n",'NLINEBREAK',$input);
+			$input = str_replace("\r",'RLINEBREAK',$input);
+		}
 		$fiveMBs = 5 * 1024 * 1024;
 		if (($handle = fopen("php://temp/maxmemory:$fiveMBs", 'r+')) !== FALSE) {
 		fputs($handle, $input);
@@ -1164,13 +1164,15 @@ if (!function_exists('easy_table_str_getcsv')) {
 		/* add dynamic row limit, 
 		* @since: 1.0
 		*/
+		
 		$option = get_option('easy_table_plugin_option');
 		$limit  = !empty($option['limit']) ? (int)$option['limit'] : 2000;
-		
 		while (($data = @fgetcsv($handle, $limit, $delimiter, $enclosure)) !== FALSE) {
 			$num = count($data);
 			for ($c=0; $c < $num; $c++) {
 				$line++;
+				$data[$c] = str_replace('NLINEBREAK',"\n",$data[$c]);
+				$data[$c] = str_replace('RLINEBREAK',"\r",$data[$c]);
 				$return[$line] = $data[$c];
 			}
 		}
