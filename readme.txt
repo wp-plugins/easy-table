@@ -3,8 +3,8 @@ Contributors: takien
 Donate link: http://takien.com/donate
 Tags: table,csv,csv-to-table,post,excel,csv file,widget,tablesorter
 Requires at least: 3.0
-Tested up to: 3.5.1
-Stable tag: 1.1.1
+Tested up to: 3.6
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -185,6 +185,7 @@ row4col1,row4col2,row4col3|
 `[table file="example.com/blog/wp-content/uploads/pricelist.csv"][/table]`
 
 [Look confusing? Please click here](http://takien.com/plugins/easy-table).
+Or check out our video tutorial here http://www.youtube.com/watch?v=Th0_qSleyDI
 
 = Other notes =
 * Data in each cell must not have line break, otherwise it will be detected as new row.
@@ -214,6 +215,9 @@ There are many ways to install this plugin, e.g:
 No
 
 == Changelog ==
+
+= 1.1.2 =
+* Fixed bug limit param doesn't work on version 1.1.1
 
 = 1.1.1 =
 * Fixed bug custom terminator doesn't work on version 1.1
