@@ -4,7 +4,7 @@ Donate link: http://takien.com/donate
 Tags: table,csv,csv-to-table,post,excel,csv file,widget,tablesorter
 Requires at least: 3.0
 Tested up to: 3.6
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,7 +47,7 @@ Year,Make,Model,Length
 2000,Mercury,Cougar,2.38
 [/table]`
 
-Valid with value : auto, any number followed by % or px.
+Valid width value : auto, any number followed by % or px.
 If width not set, it will use default width value ( can be changed via Plugin option )
 
 * Table with colspan and other attribute in some cells
@@ -224,6 +224,9 @@ There are many ways to install this plugin, e.g:
 No
 
 == Changelog ==
+
+= 1.1.4 =
+* Added new parameter 'fixlinebreak' to optionally convert newline to &lt;br /&gt; if terminator is not \r or \n
 
 = 1.1.3 =
 * Added: now you can use 'auto' for table width

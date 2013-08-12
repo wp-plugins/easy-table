@@ -4,7 +4,7 @@ Plugin Name: Easy Table
 Plugin URI: http://takien.com/
 Description: Create table in post, page, or widget in easy way.
 Author: Takien
-Version: 1.1.3
+Version: 1.1.4
 Author URI: http://takien.com/
 */
 
@@ -55,7 +55,8 @@ var $settings = Array(
 	'nl'            => '~~',
 	'csvfile'       => false,
 	'terminator'    => '\n', /*row terminator, since 1.0*/
-	'limit'         => 0 /*max row to be included to table, 0 = unlimited, since 1.0*/
+	'limit'         => 0, /*max row to be included to table, 0 = unlimited, since 1.0*/
+	'fixlinebreak'  => false
 );
 
 
@@ -85,7 +86,7 @@ function __construct(){
 private function easy_table_base($return){
 	$easy_table_base = Array(
 				'name' 			=> 'Easy Table',
-				'version' 		=> '1.1.3',
+				'version' 		=> '1.1.4',
 				'plugin-domain'	=> 'easy-table'
 	);
 	return $easy_table_base[$return];
@@ -115,6 +116,7 @@ function easy_table_short_code($atts, $content="") {
 		'style'	        => '', /*table inline style, since 1.0*/
 		'colalign'      => '', /*column align, ex: [table colalign="left|right|center"], @since 1.0*/
 		'colwidth'      => '', /*column width, ex: [table colwidth="100|200|300"], @since 1.0*/
+		'fixlinebreak'  => $this->option('fixlinebreak') /* fix linebreak on cell if terminator is not \n or \r @since 1.1.4 */
 	 ), $atts);
 	/**
 	* because clean_pre is deprecated since WordPress 3.4, then replace it manually
@@ -321,9 +323,13 @@ ai head, text to shown in the table head row, default is No.
 			$cell  = $trim ? trim(str_replace('&nbsp;','',$cell)) : $cell;
 			
 			/*nl2br? only if terminator is not \n or \r*/
-			if(( '\n' !== $terminator )  OR ( '\r' !== $terminator )) {
-				$cell = nl2br($cell);
-			}	
+			/* optionally, if $fixlinebreak is set. @since 1.1.4 */
+			
+			if ( $fixlinebreak ) {
+				if(( '\n' !== $terminator )  OR ( '\r' !== $terminator )) {
+					$cell = nl2br($cell);
+				}
+			}
 			/*colalign
 			 @since 1.0
 			 */
@@ -838,6 +844,13 @@ settings_fields('easy_table_option_field');
 			'type'			=> 'text',
 			'value'			=> $this->option('escape'),
 			'description'	=>__('CSV escape (default is backslash)','easy-table'))
+		,Array(
+			'name'			=> 'easy_table_plugin_option[fixlinebreak]',
+			'label'			=> __('Fix linebreak','easy-table'),
+			'type'			=> 'checkbox',
+			'value'			=> 1,
+			'description'	=> __('If terminator is not default (linebreak), you may encounter some issue with linebreak inside cell, try to check or uncheck this to resolve','easy-table'),
+			'attr'			=> $this->option('fixlinebreak') ? 'checked="checked"' : '')
 		,Array(
 			'name'			=> 'easy_table_plugin_option[csvfile]',
 			'label'			=> __('Allow read CSV from file?','easy-table'),
