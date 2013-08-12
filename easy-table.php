@@ -4,7 +4,7 @@ Plugin Name: Easy Table
 Plugin URI: http://takien.com/
 Description: Create table in post, page, or widget in easy way.
 Author: Takien
-Version: 1.1.2
+Version: 1.1.3
 Author URI: http://takien.com/
 */
 
@@ -19,9 +19,6 @@ Author URI: http://takien.com/
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-
-    For a copy of the GNU General Public License, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 if(!defined('ABSPATH')) die();
@@ -88,7 +85,7 @@ function __construct(){
 private function easy_table_base($return){
 	$easy_table_base = Array(
 				'name' 			=> 'Easy Table',
-				'version' 		=> '1.1.2',
+				'version' 		=> '1.1.3',
 				'plugin-domain'	=> 'easy-table'
 	);
 	return $easy_table_base[$return];
@@ -212,8 +209,15 @@ private function csv_to_table($data,$args){
 	* @since 0.4
 	*/
 	$tfpos = ($tf == 'last') ? count($data) : ($th?2:1);
+	
+	/**
+	* add auto width
+	* @since 1.1.3
+	*/	
 
-	$width = (stripos($width,'%') === false) ? (int)$width.'px' : (int)$width.'%';
+	if ( 'auto' !== $width ) {
+ 		$width = (stripos($width,'%') === false) ? (int)$width.'px' : (int)$width.'%';
+ 	}
 	
 	/*colalign & colwidth
 	@since 1.0
@@ -226,7 +230,9 @@ private function csv_to_table($data,$args){
 	}
 	
 	$output = '<table '.($id ? 'id="'.$id.'"':'');
-	$output .= ' width="'.$width.'" ';
+	
+	//$output .= ' width="'.$width.'" '; width attr not used, use style instead (see below) - since 1.1.3
+	
 	$output .= ' style="'.((stripos($style,'width') === false) ? ('width:'.$width.';') : $style).'" ';
 	$output .= ' class="easy-table easy-table-'.$theme.' '.($tablesorter ? 'tablesorter __sortlist__ ':'').$class.'" '.
 	(($border !=='0') ? 'border="'.$border.'"' : '').
