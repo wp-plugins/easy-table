@@ -4,7 +4,7 @@ Plugin Name: Easy Table
 Plugin URI: http://takien.com/
 Description: Create table in post, page, or widget in easy way.
 Author: Takien
-Version: 1.1.4
+Version: 1.2
 Author URI: http://takien.com/
 */
 
@@ -39,6 +39,7 @@ var $settings = Array(
 	'class'         => '',
 	'caption'       => false,
 	'width'         => '100%',
+	'align'         => 'left',
 	'th'            => true,
 	'tf'            => false,
 	'border'        => 0,
@@ -86,7 +87,7 @@ function __construct(){
 private function easy_table_base($return){
 	$easy_table_base = Array(
 				'name' 			=> 'Easy Table',
-				'version' 		=> '1.1.4',
+				'version' 		=> '1.2',
 				'plugin-domain'	=> 'easy-table'
 	);
 	return $easy_table_base[$return];
@@ -94,26 +95,27 @@ private function easy_table_base($return){
 
 function easy_table_short_code($atts, $content="") {
 	$shortcode_atts = shortcode_atts(array(
-		'class' 		=> $this->option('class'),
-		'caption' 		=> $this->option('caption'),
-		'width' 		=> $this->option('width'),
-		'th'	  		=> $this->option('th'),
-		'tf'	  		=> $this->option('tf'),
-		'border'		=> $this->option('border'),
-		'id'	  		=> $this->option('id'),
-		'theme'			=> $this->option('theme'),
-		'tablesorter'	=> $this->option('tablesorter'),
-		'delimiter'		=> $this->option('delimiter'),
-		'enclosure' 	=> $this->option('enclosure'),
-		'escape' 		=> $this->option('escape'),
-		'file'			=> $this->option('file'),
-		'trim'			=> $this->option('trim'), 
+		'class'         => $this->option('class'),
+		'caption'       => $this->option('caption'),
+		'width'         => $this->option('width'),
+		'th'            => $this->option('th'),
+		'tf'            => $this->option('tf'),
+		'border'        => $this->option('border'),
+		'id'            => $this->option('id'),
+		'theme'         => $this->option('theme'),
+		'tablesorter'   => $this->option('tablesorter'),
+		'delimiter'     => $this->option('delimiter'),
+		'enclosure'     => $this->option('enclosure'),
+		'escape'        => $this->option('escape'),
+		'file'          => $this->option('file'),
+		'trim'          => $this->option('trim'), 
 		'sort'          => '',
 		'nl'            => $this->option('nl'),
 		'ai'            => false,
-		'terminator'	=> $this->option('terminator'),
-		'limit'	        => $this->option('limit'),
-		'style'	        => '', /*table inline style, since 1.0*/
+		'terminator'    => $this->option('terminator'),
+		'limit'         => $this->option('limit'),
+		'align'         => $this->option('align'),
+		'style'         => '', /*table inline style, since 1.0*/
 		'colalign'      => '', /*column align, ex: [table colalign="left|right|center"], @since 1.0*/
 		'colwidth'      => '', /*column width, ex: [table colwidth="100|200|300"], @since 1.0*/
 		'fixlinebreak'  => $this->option('fixlinebreak') /* fix linebreak on cell if terminator is not \n or \r @since 1.1.4 */
@@ -231,11 +233,28 @@ private function csv_to_table($data,$args){
 	    $c_width = explode('|',$colwidth);
 	}
 	
+	/* added back $align, with new way of implementation, 
+	* @since 1.4
+	*/
+	$style = rtrim($style, ';');
+	switch ($align) :
+		case 'center':
+			$alignstyle = '; margin-left:auto;margin-right:auto';
+		break;
+		case 'right':
+			$alignstyle = '; margin-left:auto;margin-right:0';
+		break;
+		default:
+			$alignstyle = '';
+		break;
+	endswitch; 
+	
+	$style = $style.$alignstyle;
+	
 	$output = '<table '.($id ? 'id="'.$id.'"':'');
 	
 	//$output .= ' width="'.$width.'" '; width attr not used, use style instead (see below) - since 1.1.3
-	
-	$output .= ' style="'.((stripos($style,'width') === false) ? ('width:'.$width.';') : $style).'" ';
+	$output .= ' style="'.((stripos($style,'width') === false) ? ('width:'.$width.';') : '').' '.ltrim($style,';').'" ';
 	$output .= ' class="easy-table easy-table-'.$theme.' '.($tablesorter ? 'tablesorter __sortlist__ ':'').$class.'" '.
 	(($border !=='0') ? 'border="'.$border.'"' : '').
 	'>'."\n";
@@ -762,6 +781,12 @@ settings_fields('easy_table_option_field');
 			'type'			=> 'text',
 			'description'	=> __('Table border (may be overriden by CSS)','easy-table'),
 			'value'			=> $this->option('border'))
+		,Array(
+			'name'			=>'easy_table_plugin_option[align]',
+			'label'			=> __('Table align','easy-table'),
+			'type'			=> 'text',
+			'description'	=> __('Table align (left, center, right)','easy-table'),
+			'value'			=> $this->option('align'))
 	);
 	?>	
 

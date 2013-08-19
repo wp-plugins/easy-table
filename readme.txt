@@ -4,7 +4,7 @@ Donate link: http://takien.com/donate
 Tags: table,csv,csv-to-table,post,excel,csv file,widget,tablesorter
 Requires at least: 3.0
 Tested up to: 3.6
-Stable tag: 1.1.4
+Stable tag: 1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -224,6 +224,9 @@ There are many ways to install this plugin, e.g:
 No
 
 == Changelog ==
+
+= 1.2 =
+* Added: `align` parameter is now back. (Previously removed on version 1.1)
 
 = 1.1.4 =
 * Added new parameter 'fixlinebreak' to optionally convert newline to &lt;br /&gt; if terminator is not \r or \n
