@@ -24,6 +24,10 @@ Easy Table using standard CSV format to generate table data, it's easiest way to
 * Fancy table design (using Twitter CSS bootstrap)
 * WYSIWYG safe, I mean you can switch HTML/View tab in WordPress editor without breaking the table data.
 
+= Known bugs =
+* Enclosure will not work on first cell of a row
+* Chinese characters (and others?) usually stripped down on first cell of a row
+
 = Example usage =
 
 * Basic table
