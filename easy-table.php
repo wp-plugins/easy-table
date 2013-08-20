@@ -4,7 +4,7 @@ Plugin Name: Easy Table
 Plugin URI: http://takien.com/
 Description: Create table in post, page, or widget in easy way.
 Author: Takien
-Version: 1.3
+Version: 1.3.1
 Author URI: http://takien.com/
 */
 
@@ -87,7 +87,7 @@ function __construct(){
 private function easy_table_base($return){
 	$easy_table_base = Array(
 				'name' 			=> 'Easy Table',
-				'version' 		=> '1.3',
+				'version' 		=> '1.3.1',
 				'plugin-domain'	=> 'easy-table'
 	);
 	return $easy_table_base[$return];
@@ -1217,7 +1217,7 @@ if (!function_exists('easy_table_str_getcsv')) {
 		
 		$option = get_option('easy_table_plugin_option');
 		$limit  = !empty($option['limit']) ? (int)$option['limit'] : 2000;
-		while (($data = @fgetcsv($handle, $limit, $delimiter, $enclosure, $escape)) !== FALSE) {
+		while (($data = @fgetcsv( $handle, $limit, $delimiter, $enclosure )) !== FALSE) {
 			$num = count($data);
 			for ($c=0; $c < $num; $c++) {
 				$line++;
