@@ -4,7 +4,7 @@ Plugin Name: Easy Table
 Plugin URI: http://takien.com/
 Description: Create table in post, page, or widget in easy way.
 Author: Takien
-Version: 1.2
+Version: 1.3
 Author URI: http://takien.com/
 */
 
@@ -87,7 +87,7 @@ function __construct(){
 private function easy_table_base($return){
 	$easy_table_base = Array(
 				'name' 			=> 'Easy Table',
-				'version' 		=> '1.2',
+				'version' 		=> '1.3',
 				'plugin-domain'	=> 'easy-table'
 	);
 	return $easy_table_base[$return];
@@ -1191,7 +1191,7 @@ function easy_table_init() {
 * Use dedicated str_getcsv since 1.1
 */	
 if (!function_exists('easy_table_str_getcsv')) {
-	function easy_table_str_getcsv($input, $delimiter = ",", $enclosure = '"', $escape = "\\"){
+	function easy_table_str_getcsv($input, $delimiter = ",", $enclosure = '"', $escape = '\\'){
 		
 		/** 
 		* Bug fix, custom terminator wont work
@@ -1203,6 +1203,8 @@ if (!function_exists('easy_table_str_getcsv')) {
 			$input = str_replace("\n",'NLINEBREAK',$input);
 			$input = str_replace("\r",'RLINEBREAK',$input);
 		}
+		$input = str_ireplace( $escape.$delimiter,'_ESCAPED_SEPATATOR_',$input );
+		
 		$fiveMBs = 5 * 1024 * 1024;
 		if (($handle = fopen("php://temp/maxmemory:$fiveMBs", 'r+')) !== FALSE) {
 		fputs($handle, $input);
@@ -1215,12 +1217,13 @@ if (!function_exists('easy_table_str_getcsv')) {
 		
 		$option = get_option('easy_table_plugin_option');
 		$limit  = !empty($option['limit']) ? (int)$option['limit'] : 2000;
-		while (($data = @fgetcsv($handle, $limit, $delimiter, $enclosure)) !== FALSE) {
+		while (($data = @fgetcsv($handle, $limit, $delimiter, $enclosure, $escape)) !== FALSE) {
 			$num = count($data);
 			for ($c=0; $c < $num; $c++) {
 				$line++;
 				$data[$c] = str_replace('NLINEBREAK',"\n",$data[$c]);
 				$data[$c] = str_replace('RLINEBREAK',"\r",$data[$c]);
+				$data[$c] = str_replace('_ESCAPED_SEPATATOR_',$delimiter,$data[$c]);
 				$return[$line] = $data[$c];
 			}
 		}
