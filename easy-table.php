@@ -4,7 +4,7 @@ Plugin Name: Easy Table
 Plugin URI: http://takien.com/
 Description: Create table in post, page, or widget in easy way.
 Author: Takien
-Version: 1.4
+Version: 1.5
 Author URI: http://takien.com/
 */
 
@@ -60,17 +60,14 @@ var $settings = Array(
 	'fixlinebreak'  => false
 );
 
-
-function EasyTable(){
-	$this->__construct();
-}
-
 function __construct(){
 	$plugin = plugin_basename(__FILE__);
 	add_filter("plugin_action_links_$plugin",  array(&$this,'easy_table_settings_link' ));
 	
 	load_plugin_textdomain('easy-table', false, basename( dirname( __FILE__ ) ) . '/languages' );
 	
+	/* check existsing [table] shortcode, since 1.5 */
+	add_action('admin_notices',       array(&$this,'easy_table_shortcode_check'));
 	add_action('admin_init', 		 array(&$this,'easy_table_register_setting'));
 	add_action('admin_head',		 array(&$this,'easy_table_admin_script'));
 	add_action('wp_enqueue_scripts', array(&$this,'easy_table_script'));
@@ -87,12 +84,21 @@ function __construct(){
 private function easy_table_base($return){
 	$easy_table_base = Array(
 				'name' 			=> 'Easy Table',
-				'version' 		=> '1.4',
+				'version' 		=> '1.5',
 				'plugin-domain'	=> 'easy-table'
 	);
 	return $easy_table_base[$return];
 }
 
+function easy_table_shortcode_check() {
+	$option = get_option('easy_table_plugin_option');
+	if ( shortcode_exists( 'table' ) AND ('table' == $this->option('shortcodetag'))) { ?>
+		<div class="error">
+			<p><strong>Easy Table</strong>: <?php printf(__('It seems %1$s shortcode already used by another plugin and potentially cause problem with %2$s. Please change %3$s into another term other than %4$s.  <a href="%5$s">Click here to fix it.</a>','easy-table'), '<code>[table]</code>','Easy Table','<em>Easy Table short code tag</em>','<code>table</code>','options-general.php?page=easy-table');?></p>
+		</div>
+		<?php 
+	}
+}
 function easy_table_short_code($atts, $content="") {
 	$shortcode_atts = shortcode_atts(array(
 		'class'         => $this->option('class'),
@@ -251,7 +257,9 @@ private function csv_to_table($data,$args){
 	
 	$style = $style.$alignstyle;
 	
-	$output = '<table '.($id ? 'id="'.$id.'"':'');
+	/* wrap with .table-responsive div, since 1.5 */
+	$output  = '<div class="table-responsive">';
+	$output .= '<table '.($id ? 'id="'.$id.'"':'');
 	
 	//$output .= ' width="'.$width.'" '; width attr not used, use style instead (see below) - since 1.1.3
 	$output .= ' style="'.((stripos($style,'width') === false) ? ('width:'.$width.';') : '').' '.ltrim($style,';').'" ';
@@ -382,7 +390,7 @@ ai head, text to shown in the table head row, default is No.
 		$output .= (($r==$tfpos) AND $tf) ? '</tfoot>'.((($tf==1) AND !$th) ? '<tbody>':''): '';
 		
 	}
-	$output .= (($tf!=='last')?'</tbody>':'').'</table>';
+	$output .= (($tf!=='last')?'</tbody>':'').'</table></div>';
 	
 	/** 
 	* Build sortlist metadata and append it to the table class
@@ -1217,7 +1225,7 @@ if (!function_exists('easy_table_str_getcsv')) {
 		*/
 		
 		$option = get_option('easy_table_plugin_option');
-		$limit  = !empty($option['limit']) ? (int)$option['limit'] : 2000;
+		$limit  = !empty($option['limit']) ? (int)$option['limit'] : 2000000;
 		while (($data = @fgetcsv( $handle, $limit, $delimiter, $enclosure )) !== FALSE) {
 			$num = count($data);
 			for ($c=0; $c < $num; $c++) {
