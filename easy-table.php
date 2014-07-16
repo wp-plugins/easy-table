@@ -66,19 +66,33 @@ function __construct(){
 	
 	load_plugin_textdomain('easy-table', false, basename( dirname( __FILE__ ) ) . '/languages' );
 	
-	/* check existsing [table] shortcode, since 1.5 */
-	add_action('admin_notices',       array(&$this,'easy_table_shortcode_check'));
 	add_action('admin_init', 		 array(&$this,'easy_table_register_setting'));
 	add_action('admin_head',		 array(&$this,'easy_table_admin_script'));
 	add_action('wp_enqueue_scripts', array(&$this,'easy_table_script'));
 	add_action('wp_enqueue_scripts', array(&$this,'easy_table_style'));
 	add_action('admin_menu', 		 array(&$this,'easy_table_add_page'));
 	add_action('contextual_help', 	 array(&$this,'easy_table_help'));
-	add_shortcode($this->option('shortcodetag'),  array(&$this,'easy_table_short_code'));
-	add_shortcode($this->option('attrtag'),  array(&$this,'easy_table_short_code_attr'));
+	
+	include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+	
+	if ( shortcode_exists( $this->option('shortcodetag')) OR is_plugin_active('tablepress/tablepress.php') ) {
+		add_action('admin_notices',       array(&$this,'easy_table_shortcode_check_notice'));
+	}
+	else {
+		add_shortcode($this->option('shortcodetag'),  array(&$this,'easy_table_short_code'));
+	}
+	
+	if ( shortcode_exists( $this->option('attrtag') ) ) {
+		add_action('admin_notices',       array(&$this,'easy_table_attr_shortcode_check_notice'));
+	}
+	else {
+		add_shortcode($this->option('attrtag'),  array(&$this,'easy_table_short_code_attr'));
+	}
+	
 	if($this->option('tablewidget')){
 		add_filter('widget_text', 		'do_shortcode');
 	}
+	$table_shortcodetag_already_exists = false;
 }
 
 private function easy_table_base($return){
@@ -90,15 +104,24 @@ private function easy_table_base($return){
 	return $easy_table_base[$return];
 }
 
-function easy_table_shortcode_check() {
-	$option = get_option('easy_table_plugin_option');
-	if ( shortcode_exists( 'table' ) AND ('table' == $this->option('shortcodetag'))) { ?>
-		<div class="error">
-			<p><strong>Easy Table</strong>: <?php printf(__('It seems %1$s shortcode already used by another plugin and potentially cause problem with %2$s. Please change %3$s into another term other than %4$s.  <a href="%5$s">Click here to fix it.</a>','easy-table'), '<code>[table]</code>','Easy Table','<em>Easy Table short code tag</em>','<code>table</code>','options-general.php?page=easy-table');?></p>
-		</div>
-		<?php 
-	}
+
+function easy_table_shortcode_check_notice() {
+	$shortcode = $this->option('shortcodetag');
+	?>
+	<div class="error">
+		<p><strong>Easy Table</strong>: <?php printf(__('It seems that %1$s shortcode already used by another plugin and potentially cause problem with %2$s. Please change %3$s into another term other than %4$s.  <a href="%5$s">Click here to fix it.</a>','easy-table'), '<code>['.$shortcode.']</code>','Easy Table','<em>Easy Table short code tag</em>','<code>'.$shortcode.'</code>','options-general.php?page=easy-table');?></p>
+	</div>
+	<?php 
 }
+function easy_table_attr_shortcode_check_notice() {
+	$shortcode = $this->option('attrtag');
+	?>
+	<div class="error">
+		<p><strong>Easy Table</strong>: <?php printf(__('It seems that %1$s shortcode already used by another plugin and potentially cause problem with %2$s. Please change %3$s into another term other than %4$s.  <a href="%5$s">Click here to fix it.</a>','easy-table'), '<code>['.$shortcode.']</code>','Easy Table','<em>Easy Table cell attribute tag</em>','<code>'.$shortcode.'</code>','options-general.php?page=easy-table');?></p>
+	</div>
+	<?php 
+}
+
 function easy_table_short_code($atts, $content="") {
 	$shortcode_atts = shortcode_atts(array(
 		'class'         => $this->option('class'),

@@ -251,7 +251,7 @@ No
 = 1.5 = 
 * Add table-responsive `div` wrap around table and responsive CSS.
 * Suppress error message: 'Redefining already defined constructor...' on certain PHP version environment.
-* Add admin notice to solve `[table "0" not found /]` error manually.
+* Check against shortcode that may has been registered by another plugin.
 * Increase `fgetcsv` limit from 2000 to 2000000 if $limit value not set. 
 
 = 1.4 =
