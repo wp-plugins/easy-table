@@ -4,7 +4,7 @@ Plugin Name: Easy Table
 Plugin URI: http://takien.com/
 Description: Create table in post, page, or widget in easy way.
 Author: Takien
-Version: 1.5.1
+Version: 1.5.2
 Author URI: http://takien.com/
 */
 
@@ -74,6 +74,7 @@ function __construct(){
 	add_action('contextual_help', 	 array(&$this,'easy_table_help'));
 	
 	include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+	include_once( dirname(__FILE__) . '/inc/compatibility.php' ); /* since 1.5.2 */
 	
 	$conflict = false;
 	
@@ -105,7 +106,7 @@ function __construct(){
 private function easy_table_base($return){
 	$easy_table_base = Array(
 				'name' 			=> 'Easy Table',
-				'version' 		=> '1.5.1',
+				'version' 		=> '1.5.2',
 				'plugin-domain'	=> 'easy-table'
 	);
 	return $easy_table_base[$return];
